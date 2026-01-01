@@ -167,9 +167,9 @@ This application requires the following:
 2. **Microsoft Entra App Registration**: An app registered in Microsoft Entra (Azure AD) with:
    - **Application Type**: Public client application
    - **Redirect URI**: Not required for device code flow
-   - **API Permissions**: 
+   - **API Permissions**:
      - `Calendars.ReadWrite` (Delegated)
-     - `Contacts.Read` (Delegated)  
+     - `Contacts.Read` (Delegated)
      - `User.Read` (Delegated)
    - **Admin Consent**: Granted for all permissions
 
