@@ -83,13 +83,15 @@ The application will:
 2. After authentication, it will access your Microsoft 365 data
 3. Create a "Birthdays" calendar if it doesn't exist
 4. Read all contacts with birthday information
-5. Create calendar events for each birthday
+5. Check for existing birthday events to avoid duplicates
+6. Create calendar events for each new birthday
 
 ## Features
 
 - ✅ Interactive device code authentication
 - ✅ Automatic calendar creation
 - ✅ All-day birthday events
+- ✅ Duplicate detection (skip existing events)
 - ✅ Configurable calendar name
 - ✅ Secure credential management via environment variables
 - ✅ Uses official Microsoft Graph SDK for Python

@@ -99,6 +99,28 @@ class BirthdayCalendarSync:
 
         return contacts_with_birthdays
 
+    async def get_existing_birthday_events(self, calendar_id: str) -> Dict[str, str]:
+        """Get existing birthday events to avoid duplicates."""
+        existing_events = {}
+        
+        try:
+            events = await self.graph_client.me.calendars.by_calendar_id(
+                calendar_id
+            ).events.get()
+            
+            if events and events.value:
+                for event in events.value:
+                    # Check if this is a birthday event
+                    if event.subject and "Birthday" in event.subject:
+                        # Extract name from subject (format: "🎂 Name's Birthday")
+                        subject = event.subject.replace("🎂 ", "").replace("'s Birthday", "")
+                        existing_events[subject] = event.id
+                        
+        except Exception as e:
+            print(f"Warning: Could not check existing events: {e}")
+            
+        return existing_events
+
     async def create_birthday_event(
         self, calendar_id: str, contact_name: str, birthday: datetime
     ) -> bool:
@@ -165,13 +187,25 @@ class BirthdayCalendarSync:
 
         print(f"Using calendar: {self.calendar_name}")
 
+        # Get existing birthday events to avoid duplicates
+        existing_events = await self.get_existing_birthday_events(calendar_id)
+        if existing_events:
+            print(f"Found {len(existing_events)} existing birthday events")
+
         # Get contacts with birthdays
         contacts = await self.get_contacts_with_birthdays()
         print(f"Found {len(contacts)} contacts with birthdays")
 
         # Create events for each birthday
         success_count = 0
+        skipped_count = 0
         for contact in contacts:
+            # Skip if event already exists
+            if contact["name"] in existing_events:
+                print(f"⊙ Skipped {contact['name']} (already exists)")
+                skipped_count += 1
+                continue
+                
             if await self.create_birthday_event(
                 calendar_id, contact["name"], contact["birthday"]
             ):
@@ -180,7 +214,7 @@ class BirthdayCalendarSync:
             else:
                 print(f"✗ Failed to create event for {contact['name']}")
 
-        print(f"\nSync complete: {success_count}/{len(contacts)} events created")
+        print(f"\nSync complete: {success_count} created, {skipped_count} skipped, {len(contacts)} total")
 
 
 async def main():
