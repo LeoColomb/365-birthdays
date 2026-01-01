@@ -99,8 +99,9 @@ The application will:
 2. After authentication, it will access your Microsoft 365 data
 3. Create a "Birthdays" calendar if it doesn't exist
 4. Read all contacts with birthday information
-5. Check for existing birthday events to avoid duplicates
-6. Create all-day calendar events for each new birthday with reminders enabled
+5. Check for existing birthday events and update them if the birthday date has changed
+6. Create recurring all-day calendar events for each new birthday with reminders enabled
+7. Events recur annually on the birthday date
 
 ## Package Structure
 
@@ -121,13 +122,79 @@ src/birthdays365/
 
 - ✅ Interactive device code authentication
 - ✅ Automatic calendar creation
-- ✅ All-day birthday events
+- ✅ All-day birthday events with yearly recurrence
 - ✅ Reminders enabled for birthday events
+- ✅ Smart event updates when contact birthdays change
 - ✅ Duplicate detection (skip existing events)
 - ✅ Configurable calendar name
+- ✅ Sentry integration for error tracking (optional)
 - ✅ Secure credential management via environment variables
 - ✅ Uses official Microsoft Graph SDK for Python
 - ✅ Clean OOP architecture with modular design
+
+## Optional: Sentry Integration
+
+To enable error tracking with Sentry:
+
+1. Create a Sentry project at [sentry.io](https://sentry.io)
+2. Get your DSN from the project settings
+3. Add it to your `.env` file:
+   ```
+   SENTRY_DSN=https://your-sentry-dsn-here
+   ```
+
+When configured, all exceptions and errors will be automatically reported to Sentry.
+
+## Microsoft 365 Integration Guide
+
+### What This App Does
+
+The 365 Birthdays app integrates with your Microsoft 365 tenant to:
+- Read contact information from your Microsoft 365 address book
+- Extract birthday dates from contact profiles
+- Create a dedicated "Birthdays" calendar in your Microsoft 365 account
+- Generate recurring calendar events for each birthday
+- Automatically update events if contact birthday information changes
+
+### Required Microsoft 365 Setup
+
+This application requires the following:
+
+1. **Microsoft 365 Account**: A valid Microsoft 365 (formerly Office 365) account with access to:
+   - Outlook/Exchange Online for calendar functionality
+   - Microsoft Graph API access
+
+2. **Microsoft Entra App Registration**: An app registered in Microsoft Entra (Azure AD) with:
+   - **Application Type**: Public client application
+   - **Redirect URI**: Not required for device code flow
+   - **API Permissions**: 
+     - `Calendars.ReadWrite` (Delegated)
+     - `Contacts.Read` (Delegated)  
+     - `User.Read` (Delegated)
+   - **Admin Consent**: Granted for all permissions
+
+3. **Public Client Flow**: Enabled in the app registration to support device code authentication
+
+### How It Works
+
+1. **Authentication**: Uses device code flow - you'll authenticate via browser
+2. **Data Reading**: Reads contacts from your Microsoft 365 account via Graph API
+3. **Calendar Management**: Creates/updates events in a dedicated calendar
+4. **Recurrence**: Events repeat annually on the same date
+5. **Smart Updates**: Detects when contact birthdays change and updates events accordingly
+
+### Data Privacy
+
+- All data stays within your Microsoft 365 tenant
+- No data is sent to third-party services (except Sentry if configured)
+- Authentication tokens are stored locally and managed by Microsoft's SDK
+- The app only accesses data you explicitly grant permission for
+
+### Permissions Explained
+
+- **Calendars.ReadWrite**: Required to create and update birthday events in your calendar
+- **Contacts.Read**: Required to read birthday information from your contacts
+- **User.Read**: Required for basic authentication and to identify the logged-in user
 
 ## Security Considerations
 

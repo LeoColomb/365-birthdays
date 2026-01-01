@@ -6,12 +6,16 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
+import sentry_sdk
 from msgraph import GraphServiceClient
 from msgraph.generated.models.body_type import BodyType
 from msgraph.generated.models.calendar import Calendar
 from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
 from msgraph.generated.models.event import Event
 from msgraph.generated.models.item_body import ItemBody
+from msgraph.generated.models.recurrence_pattern import RecurrencePattern
+from msgraph.generated.models.recurrence_range import RecurrenceRange
+from msgraph.generated.models.recurrence_range_type import RecurrenceRangeType
 
 
 class CalendarManager:
@@ -57,14 +61,16 @@ class CalendarManager:
             print(f"Error accessing/creating calendar: {e}")
             return None
 
-    async def get_existing_birthday_events(self, calendar_id: str) -> Dict[str, str]:
+    async def get_existing_birthday_events(
+        self, calendar_id: str
+    ) -> Dict[str, Dict[str, str]]:
         """Get existing birthday events to avoid duplicates.
 
         Args:
             calendar_id: ID of the calendar to check
 
         Returns:
-            Dictionary mapping contact names to event IDs
+            Dictionary mapping contact names to event info (id and date)
         """
         existing_events = {}
 
@@ -81,9 +87,13 @@ class CalendarManager:
                         subject = event.subject.replace("🎂 ", "").replace(
                             "'s Birthday", ""
                         )
-                        existing_events[subject] = event.id
+                        existing_events[subject] = {
+                            "id": event.id,
+                            "start": (event.start.date_time if event.start else None),
+                        }
 
         except Exception as e:
+            sentry_sdk.capture_exception(e)
             print(f"Warning: Could not check existing events: {e}")
 
         return existing_events
@@ -91,7 +101,7 @@ class CalendarManager:
     async def create_birthday_event(
         self, calendar_id: str, contact_name: str, birthday: datetime
     ) -> bool:
-        """Create a birthday event in the calendar with a reminder.
+        """Create a birthday event in the calendar with a reminder and recurrence.
 
         Args:
             calendar_id: ID of the calendar
@@ -144,6 +154,29 @@ class CalendarManager:
             event.is_reminder_on = True
             event.reminder_minutes_before_start = 0  # Reminder at event start
 
+            # Add yearly recurrence pattern
+            from msgraph.generated.models.recurrence_pattern_type import (
+                RecurrencePatternType,
+            )
+
+            pattern = RecurrencePattern()
+            pattern.type = RecurrencePatternType.AbsoluteYearly
+            pattern.day_of_month = birthday_date.day
+            pattern.month = birthday_date.month
+            pattern.interval = 1
+
+            recurrence_range = RecurrenceRange()
+            recurrence_range.type = RecurrenceRangeType.NoEnd
+            recurrence_range.start_date = event_date
+
+            from msgraph.generated.models.pattern_recurrence import PatternRecurrence
+
+            recurrence = PatternRecurrence()
+            recurrence.pattern = pattern
+            recurrence.range = recurrence_range
+
+            event.recurrence = recurrence
+
             # Create the event
             await self.graph_client.me.calendars.by_calendar_id(
                 calendar_id
@@ -152,5 +185,86 @@ class CalendarManager:
             return True
 
         except Exception as e:
+            sentry_sdk.capture_exception(e)
             print(f"Error creating birthday event for {contact_name}: {e}")
+            return False
+
+    async def update_birthday_event(
+        self,
+        calendar_id: str,
+        event_id: str,
+        contact_name: str,
+        birthday: datetime,
+    ) -> bool:
+        """Update an existing birthday event if the date has changed.
+
+        Args:
+            calendar_id: ID of the calendar
+            event_id: ID of the existing event
+            contact_name: Name of the contact
+            birthday: Birthday date of the contact
+
+        Returns:
+            True if event was updated successfully, False otherwise
+        """
+        try:
+            # Calculate the new event date
+            current_date = datetime.now(timezone.utc).date()
+            current_year = current_date.year
+
+            if birthday.tzinfo is None:
+                birthday = birthday.replace(tzinfo=timezone.utc)
+
+            birthday_date = birthday.date()
+            event_date = birthday_date.replace(year=current_year)
+
+            # If birthday already passed this year, schedule for next year
+            if event_date < current_date:
+                event_date = birthday_date.replace(year=current_year + 1)
+
+            # Create updated event object
+            event = Event()
+            event.start = DateTimeTimeZone()
+            event.start.date_time = event_date.isoformat()
+            event.start.time_zone = "UTC"
+
+            event.end = DateTimeTimeZone()
+            end_date = event_date + timedelta(days=1)
+            event.end.date_time = end_date.isoformat()
+            event.end.time_zone = "UTC"
+
+            # Update recurrence pattern
+            from msgraph.generated.models.pattern_recurrence import PatternRecurrence
+            from msgraph.generated.models.recurrence_pattern_type import (
+                RecurrencePatternType,
+            )
+
+            pattern = RecurrencePattern()
+            pattern.type = RecurrencePatternType.AbsoluteYearly
+            pattern.day_of_month = birthday_date.day
+            pattern.month = birthday_date.month
+            pattern.interval = 1
+
+            recurrence_range = RecurrenceRange()
+            recurrence_range.type = RecurrenceRangeType.NoEnd
+            recurrence_range.start_date = event_date
+
+            recurrence = PatternRecurrence()
+            recurrence.pattern = pattern
+            recurrence.range = recurrence_range
+
+            event.recurrence = recurrence
+
+            # Update the event
+            await (
+                self.graph_client.me.calendars.by_calendar_id(calendar_id)
+                .events.by_event_id(event_id)
+                .patch(event)
+            )
+
+            return True
+
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            print(f"Error updating birthday event for {contact_name}: {e}")
             return False

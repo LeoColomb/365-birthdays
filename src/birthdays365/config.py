@@ -16,6 +16,7 @@ class Config:
     client_id: str
     tenant_id: str
     calendar_name: str = "Birthdays"
+    sentry_dsn: str | None = None
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -25,6 +26,7 @@ class Config:
         client_id = os.getenv("CLIENT_ID")
         tenant_id = os.getenv("TENANT_ID")
         calendar_name = os.getenv("CALENDAR_NAME", "Birthdays")
+        sentry_dsn = os.getenv("SENTRY_DSN")
 
         if not client_id or not tenant_id:
             raise ValueError(
@@ -36,4 +38,5 @@ class Config:
             client_id=client_id,
             tenant_id=tenant_id,
             calendar_name=calendar_name,
+            sentry_dsn=sentry_dsn,
         )
