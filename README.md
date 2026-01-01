@@ -11,7 +11,7 @@ This Python package uses the Microsoft Graph API to:
 - Extract birthday information from contacts
 - Create and maintain a dedicated "Birthdays" calendar
 - Generate calendar events for each contact's birthday
-- Add reminders at 11:00 AM on the birthday
+- Add reminders for birthday events
 
 ## Prerequisites
 
