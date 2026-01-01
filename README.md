@@ -30,10 +30,10 @@ This Python package uses the Microsoft Graph API to:
 2. Navigate to **Applications** > **App registrations**
 3. Click **New registration**
 4. Configure your app:
-   - **Name**: 365 Birthdays Sync
-   - **Supported account types**: Accounts in this organizational directory
-     only (Single tenant)
-   - **Redirect URI**: Leave empty for now
+  - **Name**: 365 Birthdays Sync
+  - **Supported account types**: Accounts in this organizational directory
+    only (Single tenant)
+  - **Redirect URI**: Leave empty for now
 5. Click **Register**
 
 ### 2. Configure API Permissions
@@ -42,9 +42,9 @@ This Python package uses the Microsoft Graph API to:
 2. Click **Add a permission**
 3. Select **Microsoft Graph** > **Delegated permissions**
 4. Add the following permissions:
-   - `Calendars.ReadWrite` - Create and manage calendar events
-   - `Contacts.Read` - Read user contacts
-   - `User.Read` - Sign in and read user profile
+  - `Calendars.ReadWrite` - Create and manage calendar events
+  - `Contacts.Read` - Read user contacts
+  - `User.Read` - Sign in and read user profile
 5. Click **Add permissions**
 6. Click **Grant admin consent** (requires admin privileges)
 
@@ -61,15 +61,15 @@ Since this app uses device code flow for authentication:
 
 1. Copy the example environment file:
 
-   ```bash
-   cp .env.example .env
-   ```
+  ```bash
+  cp .env.example .env
+  ```
 
 2. Edit `.env` and fill in your values:
-   - `CLIENT_ID`: Application (client) ID from your app registration
-   - `TENANT_ID`: Directory (tenant) ID from your app registration
-   - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use
-     (default: "Birthdays")
+  - `CLIENT_ID`: Application (client) ID from your app registration
+  - `TENANT_ID`: Directory (tenant) ID from your app registration
+  - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use
+    (default: "Birthdays")
 
 ### 5. Install the Package
 
@@ -148,9 +148,9 @@ To enable error tracking with Sentry:
 2. Get your DSN from the project settings
 3. Add it to your `.env` file:
 
-   ```bash
-   SENTRY_DSN=https://your-sentry-dsn-here
-   ```
+  ```bash
+  SENTRY_DSN=https://your-sentry-dsn-here
+  ```
 
 When configured, all exceptions and errors will be automatically reported
 to Sentry.
@@ -172,15 +172,15 @@ The 365 Birthdays app integrates with your Microsoft 365 tenant to:
 This application requires the following:
 
 1. **Microsoft 365 Account**: A valid Microsoft 365 (formerly Office 365)
-   account with access to:
-   - Outlook/Exchange Online for calendar functionality
-   - Microsoft Graph API access
+  account with access to:
+  - Outlook/Exchange Online for calendar functionality
+  - Microsoft Graph API access
 
 2. **Microsoft Entra App Registration**: An app registered in Microsoft
-   Entra (Azure AD) with:
-   - **Application Type**: Public client application
-   - **Redirect URI**: Not required for device code flow
-   - **API Permissions**:
+  Entra (Azure AD) with:
+  - **Application Type**: Public client application
+  - **Redirect URI**: Not required for device code flow
+  - **API Permissions**:
      - `Calendars.ReadWrite` (Delegated)
      - `Contacts.Read` (Delegated)
      - `User.Read` (Delegated)
