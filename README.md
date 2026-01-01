@@ -100,7 +100,7 @@ The application will:
 3. Create a "Birthdays" calendar if it doesn't exist
 4. Read all contacts with birthday information
 5. Check for existing birthday events to avoid duplicates
-6. Create calendar events for each new birthday with a reminder at 11:00 AM
+6. Create all-day calendar events for each new birthday with reminders enabled
 
 ## Package Structure
 
@@ -121,8 +121,8 @@ src/birthdays365/
 
 - ✅ Interactive device code authentication
 - ✅ Automatic calendar creation
-- ✅ Birthday events at 11:00 AM (15-minute duration)
-- ✅ Reminders at 11:00 AM on the birthday
+- ✅ All-day birthday events
+- ✅ Reminders enabled for birthday events
 - ✅ Duplicate detection (skip existing events)
 - ✅ Configurable calendar name
 - ✅ Secure credential management via environment variables
@@ -159,6 +159,7 @@ If you get permission-related errors:
 This project uses:
 - **Python**: Primary programming language (3.8+)
 - **uv**: Fast Python package manager
+- **ruff**: Fast Python linter and formatter
 - **Microsoft Graph SDK**: For Microsoft 365 API integration
 - **Azure Identity**: For authentication with Microsoft Entra
 - **python-dotenv**: For environment variable management
@@ -170,6 +171,20 @@ This project uses:
 3. Install dependencies: `uv sync`
 4. Configure your `.env` file
 5. Run the application: `uv run birthdays365`
+
+### Code Quality
+
+Run linter and formatter:
+```bash
+# Check code
+uv run ruff check src/
+
+# Format code
+uv run ruff format src/
+
+# Fix auto-fixable issues
+uv run ruff check --fix src/
+```
 
 ## Contributing
 

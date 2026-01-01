@@ -3,20 +3,23 @@
 
 """Calendar operations for Microsoft Graph API."""
 
-from datetime import datetime, timedelta, timezone, time
-from typing import Optional, Dict
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Optional
+
 from msgraph import GraphServiceClient
-from msgraph.generated.models.event import Event
-from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
-from msgraph.generated.models.item_body import ItemBody
 from msgraph.generated.models.body_type import BodyType
 from msgraph.generated.models.calendar import Calendar
+from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
+from msgraph.generated.models.event import Event
+from msgraph.generated.models.item_body import ItemBody
 
 
 class CalendarManager:
     """Manages calendar operations via Microsoft Graph API."""
 
-    def __init__(self, graph_client: GraphServiceClient, calendar_name: str = "Birthdays"):
+    def __init__(
+        self, graph_client: GraphServiceClient, calendar_name: str = "Birthdays"
+    ):
         """Initialize the calendar manager.
 
         Args:
@@ -75,7 +78,9 @@ class CalendarManager:
                     # Check if this is a birthday event
                     if event.subject and "Birthday" in event.subject:
                         # Extract name from subject (format: "🎂 Name's Birthday")
-                        subject = event.subject.replace("🎂 ", "").replace("'s Birthday", "")
+                        subject = event.subject.replace("🎂 ", "").replace(
+                            "'s Birthday", ""
+                        )
                         existing_events[subject] = event.id
 
         except Exception as e:
@@ -86,7 +91,7 @@ class CalendarManager:
     async def create_birthday_event(
         self, calendar_id: str, contact_name: str, birthday: datetime
     ) -> bool:
-        """Create a birthday event in the calendar with a reminder at 11:00 AM.
+        """Create a birthday event in the calendar with a reminder.
 
         Args:
             calendar_id: ID of the calendar
@@ -97,7 +102,7 @@ class CalendarManager:
             True if event was created successfully, False otherwise
         """
         try:
-            # Create event for the birthday
+            # Create all-day event for the birthday
             # We use the current year for upcoming birthdays
             current_date = datetime.now(timezone.utc).date()
             current_year = current_date.year
@@ -115,22 +120,17 @@ class CalendarManager:
 
             event = Event()
             event.subject = f"🎂 {contact_name}'s Birthday"
-            
-            # Create as a timed event at 11:00 AM to ensure reminder fires at that time
-            # This is more reliable than all-day events for specific reminder times
-            event.is_all_day = False
+            event.is_all_day = True
 
-            # Set start time at 11:00 AM
-            start_datetime = datetime.combine(event_date, time(11, 0))
+            # Set start and end dates (all-day events use date format without time)
             start = DateTimeTimeZone()
-            start.date_time = start_datetime.isoformat()
+            start.date_time = event_date.isoformat()
             start.time_zone = "UTC"
             event.start = start
 
-            # Set end time at 11:15 AM (15 minute duration)
-            end_datetime = start_datetime + timedelta(minutes=15)
             end = DateTimeTimeZone()
-            end.date_time = end_datetime.isoformat()
+            end_date = event_date + timedelta(days=1)
+            end.date_time = end_date.isoformat()
             end.time_zone = "UTC"
             event.end = end
 
@@ -140,9 +140,9 @@ class CalendarManager:
             body.content = f"Birthday of {contact_name}"
             event.body = body
 
-            # Add reminder at event start time (11:00 AM)
+            # Add reminder at event start
             event.is_reminder_on = True
-            event.reminder_minutes_before_start = 0  # Reminder at 11:00 AM (event start)
+            event.reminder_minutes_before_start = 0  # Reminder at event start
 
             # Create the event
             await self.graph_client.me.calendars.by_calendar_id(

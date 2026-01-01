@@ -3,8 +3,8 @@
 
 """Contact operations for Microsoft Graph API."""
 
-from datetime import datetime
-from typing import List, Dict
+from typing import Dict, List
+
 from msgraph import GraphServiceClient
 
 

@@ -5,8 +5,8 @@
 
 from .auth import GraphAuthenticator
 from .calendar import CalendarManager
-from .contacts import ContactManager
 from .config import Config
+from .contacts import ContactManager
 
 
 class BirthdaySync:
@@ -21,9 +21,7 @@ class BirthdaySync:
         self.config = config
         self.authenticator = GraphAuthenticator(config)
         self.graph_client = self.authenticator.get_client()
-        self.calendar_manager = CalendarManager(
-            self.graph_client, config.calendar_name
-        )
+        self.calendar_manager = CalendarManager(self.graph_client, config.calendar_name)
         self.contact_manager = ContactManager(self.graph_client)
 
     async def sync(self) -> None:
