@@ -3,7 +3,7 @@ name = "birthdays365"
 version = "0.1.0"
 description = "Microsoft 365 Birthday Calendar Sync - Automatically sync birthdays from contacts to calendar"
 authors = [
-    { name = "Léo Colombaro", email = "leo@colombaro.fr" }
+    { name = "Léo Colombaro", email = "git@colombaro.fr" }
 ]
 requires-python = ">=3.8"
 dependencies = [
