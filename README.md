@@ -2,19 +2,21 @@
 
 > 🎂 Microsoft 365 Birthday Calendar Sync
 
-Automatically sync birthdays from your Microsoft 365 contacts to a dedicated calendar.
+Automatically sync birthdays from your Microsoft 365 contacts to a dedicated calendar with reminders.
 
 ## About
 
-This Python application uses the Microsoft Graph API to:
+This Python package uses the Microsoft Graph API to:
 - Read contacts from your Microsoft 365 address book
 - Extract birthday information from contacts
 - Create and maintain a dedicated "Birthdays" calendar
 - Generate calendar events for each contact's birthday
+- Add reminders at 11:00 AM on the birthday
 
 ## Prerequisites
 
 - Python 3.8 or higher
+- [uv](https://docs.astral.sh/uv/) package manager
 - A Microsoft 365 account
 - Access to Microsoft Entra admin center (formerly Azure AD) for app registration
 
@@ -64,10 +66,18 @@ Since this app uses device code flow for authentication:
    - `TENANT_ID`: Directory (tenant) ID from your app registration
    - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use (default: "Birthdays")
 
-### 5. Install Dependencies
+### 5. Install the Package
+
+Using uv (recommended):
 
 ```bash
-pip install -r requirements.txt
+uv sync
+```
+
+Or install directly:
+
+```bash
+uv pip install -e .
 ```
 
 ## Usage
@@ -75,7 +85,13 @@ pip install -r requirements.txt
 Run the birthday sync:
 
 ```bash
-python birthday_sync.py
+uv run birthdays365
+```
+
+Or if installed globally:
+
+```bash
+birthdays365
 ```
 
 The application will:
@@ -84,17 +100,34 @@ The application will:
 3. Create a "Birthdays" calendar if it doesn't exist
 4. Read all contacts with birthday information
 5. Check for existing birthday events to avoid duplicates
-6. Create calendar events for each new birthday
+6. Create calendar events for each new birthday with a reminder at 11:00 AM
+
+## Package Structure
+
+The package is organized as follows:
+
+```
+src/birthdays365/
+├── __init__.py      # Package initialization and exports
+├── auth.py          # Authentication handling
+├── calendar.py      # Calendar operations
+├── cli.py           # Command-line interface
+├── config.py        # Configuration management
+├── contacts.py      # Contact operations
+└── sync.py          # Main synchronization logic
+```
 
 ## Features
 
 - ✅ Interactive device code authentication
 - ✅ Automatic calendar creation
-- ✅ All-day birthday events
+- ✅ Birthday events at 11:00 AM (15-minute duration)
+- ✅ Reminders at 11:00 AM on the birthday
 - ✅ Duplicate detection (skip existing events)
 - ✅ Configurable calendar name
 - ✅ Secure credential management via environment variables
 - ✅ Uses official Microsoft Graph SDK for Python
+- ✅ Clean OOP architecture with modular design
 
 ## Security Considerations
 
@@ -124,10 +157,19 @@ If you get permission-related errors:
 ## Development
 
 This project uses:
-- **Python**: Primary programming language
+- **Python**: Primary programming language (3.8+)
+- **uv**: Fast Python package manager
 - **Microsoft Graph SDK**: For Microsoft 365 API integration
 - **Azure Identity**: For authentication with Microsoft Entra
 - **python-dotenv**: For environment variable management
+
+### Development Setup
+
+1. Clone the repository
+2. Install uv: `pip install uv`
+3. Install dependencies: `uv sync`
+4. Configure your `.env` file
+5. Run the application: `uv run birthdays365`
 
 ## Contributing
 

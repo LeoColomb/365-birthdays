@@ -1,0 +1,22 @@
+[project]
+name = "birthdays365"
+version = "0.1.0"
+description = "Microsoft 365 Birthday Calendar Sync - Automatically sync birthdays from contacts to calendar"
+authors = [
+    { name = "Léo Colombaro", email = "leo@colombaro.fr" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "msgraph-sdk==1.5.4",
+    "azure-identity==1.19.0",
+    "python-dotenv==1.0.1",
+]
+license = { text = "MIT" }
+readme = "README.md"
+
+[project.scripts]
+birthdays365 = "birthdays365.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

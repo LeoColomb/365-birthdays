@@ -1,6 +1,0 @@
-# Microsoft Graph SDK and authentication
-msgraph-sdk==1.5.4
-azure-identity==1.19.0
-
-# Environment variable management
-python-dotenv==1.0.1

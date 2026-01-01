@@ -25,6 +25,10 @@ wheels/
 .installed.cfg
 *.egg
 
+# uv
+.venv/
+uv.lock
+
 # Environment variables
 .env
 .env.local
