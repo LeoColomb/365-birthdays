@@ -3,7 +3,7 @@
 
 """Calendar operations for Microsoft Graph API."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, time
 from typing import Optional, Dict
 from msgraph import GraphServiceClient
 from msgraph.generated.models.event import Event
@@ -121,14 +121,14 @@ class CalendarManager:
             event.is_all_day = False
 
             # Set start time at 11:00 AM
-            start_datetime = datetime.combine(event_date, datetime.min.time().replace(hour=11))
+            start_datetime = datetime.combine(event_date, time(11, 0))
             start = DateTimeTimeZone()
             start.date_time = start_datetime.isoformat()
             start.time_zone = "UTC"
             event.start = start
 
             # Set end time at 11:15 AM (15 minute duration)
-            end_datetime = start_datetime.replace(hour=11, minute=15)
+            end_datetime = start_datetime + timedelta(minutes=15)
             end = DateTimeTimeZone()
             end.date_time = end_datetime.isoformat()
             end.time_zone = "UTC"
