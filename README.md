@@ -2,11 +2,13 @@
 
 > 🎂 Microsoft 365 Birthday Calendar Sync
 
-Automatically sync birthdays from your Microsoft 365 contacts to a dedicated calendar with reminders.
+Automatically sync birthdays from your Microsoft 365 contacts to a
+dedicated calendar with reminders.
 
 ## About
 
 This Python package uses the Microsoft Graph API to:
+
 - Read contacts from your Microsoft 365 address book
 - Extract birthday information from contacts
 - Create and maintain a dedicated "Birthdays" calendar
@@ -29,7 +31,8 @@ This Python package uses the Microsoft Graph API to:
 3. Click **New registration**
 4. Configure your app:
    - **Name**: 365 Birthdays Sync
-   - **Supported account types**: Accounts in this organizational directory only (Single tenant)
+   - **Supported account types**: Accounts in this organizational directory
+     only (Single tenant)
    - **Redirect URI**: Leave empty for now
 5. Click **Register**
 
@@ -57,6 +60,7 @@ Since this app uses device code flow for authentication:
 ### 4. Configure Environment Variables
 
 1. Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
@@ -64,7 +68,8 @@ Since this app uses device code flow for authentication:
 2. Edit `.env` and fill in your values:
    - `CLIENT_ID`: Application (client) ID from your app registration
    - `TENANT_ID`: Directory (tenant) ID from your app registration
-   - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use (default: "Birthdays")
+   - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use
+     (default: "Birthdays")
 
 ### 5. Install the Package
 
@@ -95,19 +100,22 @@ birthdays365
 ```
 
 The application will:
+
 1. Prompt you to visit a URL and enter a code to authenticate
 2. After authentication, it will access your Microsoft 365 data
 3. Create a "Birthdays" calendar if it doesn't exist
 4. Read all contacts with birthday information
-5. Check for existing birthday events and update them if the birthday date has changed
-6. Create recurring all-day calendar events for each new birthday with reminders enabled
+5. Check for existing birthday events and update them if the birthday
+   date has changed
+6. Create recurring all-day calendar events for each new birthday with
+   reminders enabled
 7. Events recur annually on the birthday date
 
 ## Package Structure
 
 The package is organized as follows:
 
-```
+```text
 src/birthdays365/
 ├── __init__.py      # Package initialization and exports
 ├── auth.py          # Authentication handling
@@ -139,17 +147,20 @@ To enable error tracking with Sentry:
 1. Create a Sentry project at [sentry.io](https://sentry.io)
 2. Get your DSN from the project settings
 3. Add it to your `.env` file:
-   ```
+
+   ```bash
    SENTRY_DSN=https://your-sentry-dsn-here
    ```
 
-When configured, all exceptions and errors will be automatically reported to Sentry.
+When configured, all exceptions and errors will be automatically reported
+to Sentry.
 
 ## Microsoft 365 Integration Guide
 
 ### What This App Does
 
 The 365 Birthdays app integrates with your Microsoft 365 tenant to:
+
 - Read contact information from your Microsoft 365 address book
 - Extract birthday dates from contact profiles
 - Create a dedicated "Birthdays" calendar in your Microsoft 365 account
@@ -160,11 +171,13 @@ The 365 Birthdays app integrates with your Microsoft 365 tenant to:
 
 This application requires the following:
 
-1. **Microsoft 365 Account**: A valid Microsoft 365 (formerly Office 365) account with access to:
+1. **Microsoft 365 Account**: A valid Microsoft 365 (formerly Office 365)
+   account with access to:
    - Outlook/Exchange Online for calendar functionality
    - Microsoft Graph API access
 
-2. **Microsoft Entra App Registration**: An app registered in Microsoft Entra (Azure AD) with:
+2. **Microsoft Entra App Registration**: An app registered in Microsoft
+   Entra (Azure AD) with:
    - **Application Type**: Public client application
    - **Redirect URI**: Not required for device code flow
    - **API Permissions**:
@@ -173,15 +186,19 @@ This application requires the following:
      - `User.Read` (Delegated)
    - **Admin Consent**: Granted for all permissions
 
-3. **Public Client Flow**: Enabled in the app registration to support device code authentication
+3. **Public Client Flow**: Enabled in the app registration to support
+   device code authentication
 
 ### How It Works
 
-1. **Authentication**: Uses device code flow - you'll authenticate via browser
-2. **Data Reading**: Reads contacts from your Microsoft 365 account via Graph API
+1. **Authentication**: Uses device code flow - you'll authenticate via
+   browser
+2. **Data Reading**: Reads contacts from your Microsoft 365 account via
+   Graph API
 3. **Calendar Management**: Creates/updates events in a dedicated calendar
 4. **Recurrence**: Events repeat annually on the same date
-5. **Smart Updates**: Detects when contact birthdays change and updates events accordingly
+5. **Smart Updates**: Detects when contact birthdays change and updates
+   events accordingly
 
 ### Data Privacy
 
@@ -192,9 +209,12 @@ This application requires the following:
 
 ### Permissions Explained
 
-- **Calendars.ReadWrite**: Required to create and update birthday events in your calendar
-- **Contacts.Read**: Required to read birthday information from your contacts
-- **User.Read**: Required for basic authentication and to identify the logged-in user
+- **Calendars.ReadWrite**: Required to create and update birthday events
+  in your calendar
+- **Contacts.Read**: Required to read birthday information from your
+  contacts
+- **User.Read**: Required for basic authentication and to identify the
+  logged-in user
 
 ## Security Considerations
 
@@ -209,6 +229,7 @@ This application requires the following:
 ### Authentication Errors
 
 If you encounter authentication errors:
+
 1. Verify your `CLIENT_ID` and `TENANT_ID` are correct
 2. Ensure admin consent was granted for the API permissions
 3. Check that public client flows are enabled in your app registration
@@ -217,6 +238,7 @@ If you encounter authentication errors:
 ### Permission Errors
 
 If you get permission-related errors:
+
 1. Verify all required permissions are granted in the app registration
 2. Ensure admin consent is provided
 3. Check that the user account has access to contacts and calendars
@@ -224,6 +246,7 @@ If you get permission-related errors:
 ## Development
 
 This project uses:
+
 - **Python**: Primary programming language (3.8+)
 - **uv**: Fast Python package manager
 - **ruff**: Fast Python linter and formatter
@@ -242,6 +265,7 @@ This project uses:
 ### Code Quality
 
 Run linter and formatter:
+
 ```bash
 # Check code
 uv run ruff check src/
