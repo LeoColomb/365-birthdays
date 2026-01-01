@@ -106,31 +106,33 @@ class BirthdayCalendarSync:
         try:
             # Create all-day event for the birthday
             # We use the current year for upcoming birthdays
-            current_date = datetime.now(timezone.utc)
+            current_date = datetime.now(timezone.utc).date()
             current_year = current_date.year
             
-            # Ensure birthday is timezone-aware
+            # Extract just the date part of the birthday
             if birthday.tzinfo is None:
                 birthday = birthday.replace(tzinfo=timezone.utc)
             
-            event_date = birthday.replace(year=current_year)
+            birthday_date = birthday.date()
+            event_date = birthday_date.replace(year=current_year)
 
-            # If birthday already passed this year, schedule for next year
+            # If birthday already passed this year (comparing dates only), schedule for next year
             if event_date < current_date:
-                event_date = birthday.replace(year=current_year + 1)
+                event_date = birthday_date.replace(year=current_year + 1)
 
             event = Event()
             event.subject = f"🎂 {contact_name}'s Birthday"
             event.is_all_day = True
 
-            # Set start and end times
+            # Set start and end dates (all-day events use date format without time)
             start = DateTimeTimeZone()
-            start.date_time = event_date.strftime("%Y-%m-%d")
+            start.date_time = event_date.isoformat()
             start.time_zone = "UTC"
             event.start = start
 
             end = DateTimeTimeZone()
-            end.date_time = (event_date + timedelta(days=1)).strftime("%Y-%m-%d")
+            end_date = event_date + timedelta(days=1)
+            end.date_time = end_date.isoformat()
             end.time_zone = "UTC"
             event.end = end
 
