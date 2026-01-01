@@ -13,7 +13,9 @@ from msgraph.generated.models.calendar import Calendar
 from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
 from msgraph.generated.models.event import Event
 from msgraph.generated.models.item_body import ItemBody
+from msgraph.generated.models.patterned_recurrence import PatternedRecurrence
 from msgraph.generated.models.recurrence_pattern import RecurrencePattern
+from msgraph.generated.models.recurrence_pattern_type import RecurrencePatternType
 from msgraph.generated.models.recurrence_range import RecurrenceRange
 from msgraph.generated.models.recurrence_range_type import RecurrenceRangeType
 
@@ -155,10 +157,6 @@ class CalendarManager:
             event.reminder_minutes_before_start = 0  # Reminder at event start
 
             # Add yearly recurrence pattern
-            from msgraph.generated.models.recurrence_pattern_type import (
-                RecurrencePatternType,
-            )
-
             pattern = RecurrencePattern()
             pattern.type = RecurrencePatternType.AbsoluteYearly
             pattern.day_of_month = birthday_date.day
@@ -169,9 +167,7 @@ class CalendarManager:
             recurrence_range.type = RecurrenceRangeType.NoEnd
             recurrence_range.start_date = event_date
 
-            from msgraph.generated.models.pattern_recurrence import PatternRecurrence
-
-            recurrence = PatternRecurrence()
+            recurrence = PatternedRecurrence()
             recurrence.pattern = pattern
             recurrence.range = recurrence_range
 
@@ -234,11 +230,6 @@ class CalendarManager:
             event.end.time_zone = "UTC"
 
             # Update recurrence pattern
-            from msgraph.generated.models.pattern_recurrence import PatternRecurrence
-            from msgraph.generated.models.recurrence_pattern_type import (
-                RecurrencePatternType,
-            )
-
             pattern = RecurrencePattern()
             pattern.type = RecurrencePatternType.AbsoluteYearly
             pattern.day_of_month = birthday_date.day
@@ -249,7 +240,7 @@ class CalendarManager:
             recurrence_range.type = RecurrenceRangeType.NoEnd
             recurrence_range.start_date = event_date
 
-            recurrence = PatternRecurrence()
+            recurrence = PatternedRecurrence()
             recurrence.pattern = pattern
             recurrence.range = recurrence_range
 

@@ -14,6 +14,7 @@ from .sync import BirthdaySync
 
 def main() -> None:
     """Main entry point for the CLI application."""
+    config = None
     try:
         config = Config.from_env()
 
@@ -40,7 +41,8 @@ def main() -> None:
         print("   - User.Read (Delegated)")
         sys.exit(1)
     except Exception as e:
-        sentry_sdk.capture_exception(e)
+        if config and config.sentry_dsn:
+            sentry_sdk.capture_exception(e)
         print(f"Error: {e}")
         sys.exit(1)
 
