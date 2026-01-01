@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# MIT License
+# Copyright (c) 2024-present Léo Colombaro
+
 """
 365 Birthdays - Microsoft 365 Birthday Calendar Sync
 
@@ -8,9 +11,9 @@ and creates/updates calendar events for those birthdays.
 
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, List, Dict
-from azure.identity import ClientSecretCredential
+from azure.identity import DeviceCodeCredential
 from msgraph import GraphServiceClient
 from msgraph.generated.models.event import Event
 from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
@@ -30,42 +33,30 @@ class BirthdayCalendarSync:
         # Validate required environment variables
         self.client_id = os.getenv("CLIENT_ID")
         self.tenant_id = os.getenv("TENANT_ID")
-        self.client_secret = os.getenv("CLIENT_SECRET")
         self.calendar_name = os.getenv("CALENDAR_NAME", "Birthdays")
 
-        if not all([self.client_id, self.tenant_id, self.client_secret]):
+        if not all([self.client_id, self.tenant_id]):
             raise ValueError(
                 "Missing required environment variables. "
-                "Please set CLIENT_ID, TENANT_ID, and CLIENT_SECRET."
+                "Please set CLIENT_ID and TENANT_ID."
             )
 
-        # Initialize Graph client
-        credential = ClientSecretCredential(
-            tenant_id=self.tenant_id,
+        # Initialize Graph client with device code flow for delegated permissions
+        # This will prompt the user to authenticate via browser
+        credential = DeviceCodeCredential(
             client_id=self.client_id,
-            client_secret=self.client_secret,
+            tenant_id=self.tenant_id,
         )
-        self.graph_client = GraphServiceClient(credentials=credential)
-        self.user_id = None
-
-    async def get_authenticated_user(self) -> str:
-        """Get the authenticated user's ID."""
-        if self.user_id:
-            return self.user_id
-
-        # For app-only authentication, we need to specify which user to act as
-        # This would typically come from configuration or command line
-        # For now, we'll use 'me' which works with delegated permissions
-        self.user_id = "me"
-        return self.user_id
+        
+        # Define scopes for delegated permissions
+        scopes = ["Calendars.ReadWrite", "Contacts.Read", "User.Read"]
+        self.graph_client = GraphServiceClient(credentials=credential, scopes=scopes)
 
     async def get_or_create_birthday_calendar(self) -> Optional[str]:
         """Get the birthday calendar or create it if it doesn't exist."""
-        user_id = await self.get_authenticated_user()
-
         try:
-            # Get all calendars
-            calendars = await self.graph_client.users.by_user_id(user_id).calendars.get()
+            # Get all calendars for the authenticated user
+            calendars = await self.graph_client.me.calendars.get()
 
             # Look for existing birthday calendar
             if calendars and calendars.value:
@@ -77,9 +68,7 @@ class BirthdayCalendarSync:
             new_calendar = Calendar()
             new_calendar.name = self.calendar_name
 
-            created_calendar = await self.graph_client.users.by_user_id(
-                user_id
-            ).calendars.post(new_calendar)
+            created_calendar = await self.graph_client.me.calendars.post(new_calendar)
 
             return created_calendar.id
 
@@ -89,11 +78,10 @@ class BirthdayCalendarSync:
 
     async def get_contacts_with_birthdays(self) -> List[Dict]:
         """Retrieve all contacts that have a birthday set."""
-        user_id = await self.get_authenticated_user()
         contacts_with_birthdays = []
 
         try:
-            contacts = await self.graph_client.users.by_user_id(user_id).contacts.get()
+            contacts = await self.graph_client.me.contacts.get()
 
             if contacts and contacts.value:
                 for contact in contacts.value:
@@ -115,16 +103,20 @@ class BirthdayCalendarSync:
         self, calendar_id: str, contact_name: str, birthday: datetime
     ) -> bool:
         """Create a birthday event in the calendar."""
-        user_id = await self.get_authenticated_user()
-
         try:
             # Create all-day event for the birthday
             # We use the current year for upcoming birthdays
-            current_year = datetime.now().year
+            current_date = datetime.now(timezone.utc)
+            current_year = current_date.year
+            
+            # Ensure birthday is timezone-aware
+            if birthday.tzinfo is None:
+                birthday = birthday.replace(tzinfo=timezone.utc)
+            
             event_date = birthday.replace(year=current_year)
 
             # If birthday already passed this year, schedule for next year
-            if event_date < datetime.now():
+            if event_date < current_date:
                 event_date = birthday.replace(year=current_year + 1)
 
             event = Event()
@@ -149,7 +141,7 @@ class BirthdayCalendarSync:
             event.body = body
 
             # Create the event
-            await self.graph_client.users.by_user_id(user_id).calendars.by_calendar_id(
+            await self.graph_client.me.calendars.by_calendar_id(
                 calendar_id
             ).events.post(event)
 
@@ -200,9 +192,9 @@ async def main():
         print("1. Created a .env file based on .env.example")
         print("2. Registered an app in Microsoft Entra (Azure AD)")
         print("3. Granted the following API permissions:")
-        print("   - Calendars.ReadWrite")
-        print("   - Contacts.Read")
-        print("   - User.Read")
+        print("   - Calendars.ReadWrite (Delegated)")
+        print("   - Contacts.Read (Delegated)")
+        print("   - User.Read (Delegated)")
         sys.exit(1)
     except Exception as e:
         print(f"Error: {e}")

@@ -43,14 +43,14 @@ This Python application uses the Microsoft Graph API to:
 5. Click **Add permissions**
 6. Click **Grant admin consent** (requires admin privileges)
 
-### 3. Create Client Secret
+### 3. Configure Public Client Settings
 
-1. Go to **Certificates & secrets**
-2. Click **New client secret**
-3. Add a description (e.g., "Birthday Sync Secret")
-4. Select an expiration period
-5. Click **Add**
-6. **Important**: Copy the secret value immediately (you won't be able to see it again)
+Since this app uses device code flow for authentication:
+
+1. Go to **Authentication** in your app registration
+2. Under **Advanced settings** > **Allow public client flows**
+3. Set **Enable the following mobile and desktop flows** to **Yes**
+4. Click **Save**
 
 ### 4. Configure Environment Variables
 
@@ -62,7 +62,6 @@ This Python application uses the Microsoft Graph API to:
 2. Edit `.env` and fill in your values:
    - `CLIENT_ID`: Application (client) ID from your app registration
    - `TENANT_ID`: Directory (tenant) ID from your app registration
-   - `CLIENT_SECRET`: The client secret value you created
    - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use (default: "Birthdays")
 
 ### 5. Install Dependencies
@@ -80,13 +79,15 @@ python birthday_sync.py
 ```
 
 The application will:
-1. Authenticate with Microsoft Graph using your app credentials
-2. Create a "Birthdays" calendar if it doesn't exist
-3. Read all contacts with birthday information
-4. Create calendar events for each birthday
+1. Prompt you to visit a URL and enter a code to authenticate
+2. After authentication, it will access your Microsoft 365 data
+3. Create a "Birthdays" calendar if it doesn't exist
+4. Read all contacts with birthday information
+5. Create calendar events for each birthday
 
 ## Features
 
+- ✅ Interactive device code authentication
 - ✅ Automatic calendar creation
 - ✅ All-day birthday events
 - ✅ Configurable calendar name
@@ -96,18 +97,20 @@ The application will:
 ## Security Considerations
 
 - Never commit your `.env` file to version control
-- Client secrets should be rotated regularly
-- Use Azure Key Vault for production deployments
+- Device code flow provides secure, interactive authentication
+- No client secrets needed - more secure for desktop applications
 - Apply principle of least privilege for API permissions
+- Admin consent ensures proper authorization
 
 ## Troubleshooting
 
 ### Authentication Errors
 
 If you encounter authentication errors:
-1. Verify your `CLIENT_ID`, `TENANT_ID`, and `CLIENT_SECRET` are correct
+1. Verify your `CLIENT_ID` and `TENANT_ID` are correct
 2. Ensure admin consent was granted for the API permissions
-3. Check that your client secret hasn't expired
+3. Check that public client flows are enabled in your app registration
+4. Make sure you complete the device code authentication flow
 
 ### Permission Errors
 
