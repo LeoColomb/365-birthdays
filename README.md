@@ -124,6 +124,45 @@ src/birthdays365/
 ├── config.py        # Configuration management
 ├── contacts.py      # Contact operations
 └── sync.py          # Main synchronization logic
+
+tests/
+├── __init__.py      # Test package initialization
+├── test_calendar.py # Calendar module tests
+├── test_config.py   # Configuration module tests
+├── test_contacts.py # Contacts module tests
+└── test_sync.py     # Synchronization logic tests
+```
+
+## Development
+
+### Running Tests
+
+The package includes a comprehensive test suite using pytest:
+
+```bash
+# Install development dependencies
+uv sync --group dev
+
+# Run all tests
+uv run pytest
+
+# Run tests with coverage
+uv run pytest --cov=birthdays365
+
+# Run specific test file
+uv run pytest tests/test_calendar.py
+```
+
+### Code Quality
+
+The project uses ruff for linting and formatting:
+
+```bash
+# Check code quality
+uv run ruff check src/ tests/
+
+# Format code
+uv run ruff format src/ tests/
 ```
 
 ## Features
@@ -134,10 +173,14 @@ src/birthdays365/
 - ✅ Reminders enabled for birthday events
 - ✅ Smart event updates when contact birthdays change
 - ✅ Duplicate detection (skip existing events)
+- ✅ Age calculation in event descriptions
+- ✅ Contact ID tracking for easy retrieval
+- ✅ Birthday category assignment using MS Graph API
 - ✅ Configurable calendar name
 - ✅ Sentry integration for error tracking (optional)
 - ✅ Secure credential management via environment variables
 - ✅ Uses official Microsoft Graph SDK for Python
+- ✅ Comprehensive test suite with pytest
 - ✅ Clean OOP architecture with modular design
 
 ## Optional: Sentry Integration

@@ -56,6 +56,7 @@ class BirthdaySync:
         for contact in contacts:
             contact_name = contact["name"]
             birthday = contact["birthday"]
+            contact_id = contact.get("id")
 
             # Check if event already exists
             if contact_name in existing_events:
@@ -92,7 +93,7 @@ class BirthdaySync:
                 if needs_update:
                     # Update the existing event
                     if await self.calendar_manager.update_birthday_event(
-                        calendar_id, event_info["id"], contact_name, birthday
+                        calendar_id, event_info["id"], contact_name, birthday, contact_id
                     ):
                         updated_count += 1
                         print(f"↻ Updated event for {contact_name}")
@@ -105,7 +106,7 @@ class BirthdaySync:
 
             # Create new event
             if await self.calendar_manager.create_birthday_event(
-                calendar_id, contact_name, birthday
+                calendar_id, contact_name, birthday, contact_id
             ):
                 success_count += 1
                 print(f"✓ Created event for {contact_name}")

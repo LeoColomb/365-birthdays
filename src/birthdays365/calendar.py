@@ -83,13 +83,10 @@ class CalendarManager:
 
             if events and events.value:
                 for event in events.value:
-                    # Check if this is a birthday event
-                    if event.subject and "Birthday" in event.subject:
-                        # Extract name from subject (format: "🎂 Name's Birthday")
-                        subject = event.subject.replace("🎂 ", "").replace(
-                            "'s Birthday", ""
-                        )
-                        existing_events[subject] = {
+                    # Check if this is a birthday event by checking categories
+                    if event.categories and "Birthday" in event.categories:
+                        # Subject is just the contact name
+                        existing_events[event.subject] = {
                             "id": event.id,
                             "start": (event.start.date_time if event.start else None),
                         }
@@ -101,7 +98,11 @@ class CalendarManager:
         return existing_events
 
     async def create_birthday_event(
-        self, calendar_id: str, contact_name: str, birthday: datetime
+        self,
+        calendar_id: str,
+        contact_name: str,
+        birthday: datetime,
+        contact_id: str = None,
     ) -> bool:
         """Create a birthday event in the calendar with a reminder and recurrence.
 
@@ -109,6 +110,7 @@ class CalendarManager:
             calendar_id: ID of the calendar
             contact_name: Name of the contact
             birthday: Birthday date of the contact
+            contact_id: ID of the contact (optional)
 
         Returns:
             True if event was created successfully, False otherwise
@@ -130,9 +132,13 @@ class CalendarManager:
             if event_date < current_date:
                 event_date = birthday_date.replace(year=current_year + 1)
 
+            # Calculate age
+            age = event_date.year - birthday_date.year
+
             event = Event()
-            event.subject = f"🎂 {contact_name}'s Birthday"
+            event.subject = contact_name
             event.is_all_day = True
+            event.categories = ["Birthday"]
 
             # Set start and end dates (all-day events use date format without time)
             start = DateTimeTimeZone()
@@ -146,10 +152,13 @@ class CalendarManager:
             end.time_zone = "UTC"
             event.end = end
 
-            # Add description
+            # Add description with age and contact ID
             body = ItemBody()
             body.content_type = BodyType.Text
-            body.content = f"Birthday of {contact_name}"
+            description_parts = [f"Age: {age}"]
+            if contact_id:
+                description_parts.append(f"Contact ID: {contact_id}")
+            body.content = "\n".join(description_parts)
             event.body = body
 
             # Add reminder at event start
@@ -191,6 +200,7 @@ class CalendarManager:
         event_id: str,
         contact_name: str,
         birthday: datetime,
+        contact_id: str = None,
     ) -> bool:
         """Update an existing birthday event if the date has changed.
 
@@ -199,6 +209,7 @@ class CalendarManager:
             event_id: ID of the existing event
             contact_name: Name of the contact
             birthday: Birthday date of the contact
+            contact_id: ID of the contact (optional)
 
         Returns:
             True if event was updated successfully, False otherwise
@@ -217,6 +228,9 @@ class CalendarManager:
             # If birthday already passed this year, schedule for next year
             if event_date < current_date:
                 event_date = birthday_date.replace(year=current_year + 1)
+
+            # Calculate age
+            age = event_date.year - birthday_date.year
 
             # Create updated event object
             event = Event()
@@ -245,6 +259,15 @@ class CalendarManager:
             recurrence.range = recurrence_range
 
             event.recurrence = recurrence
+
+            # Update description with age and contact ID
+            body = ItemBody()
+            body.content_type = BodyType.Text
+            description_parts = [f"Age: {age}"]
+            if contact_id:
+                description_parts.append(f"Contact ID: {contact_id}")
+            body.content = "\n".join(description_parts)
+            event.body = body
 
             # Update the event
             await (
