@@ -1,0 +1,61 @@
+[project]
+name = "birthdays365"
+version = "0.1.0"
+description = "Microsoft 365 Birthday Calendar Sync - Automatically sync birthdays from contacts to calendar"
+authors = [
+    { name = "Léo Colombaro", email = "git@colombaro.fr" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "msgraph-sdk==1.5.4",
+    "azure-identity==1.19.0",
+    "python-dotenv==1.0.1",
+    "sentry-sdk>=2.48.0",
+]
+license = { text = "MIT" }
+readme = "README.md"
+
+[project.scripts]
+birthdays365 = "birthdays365.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.10",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+

@@ -1,3 +1,4 @@
+---
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 version: 2
@@ -6,3 +7,7 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    groups:
+      github-actions:
+        patterns:
+          - "*"
