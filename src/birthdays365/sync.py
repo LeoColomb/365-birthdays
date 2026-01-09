@@ -5,6 +5,8 @@
 
 from datetime import datetime, timezone
 
+import sentry_sdk
+
 from .auth import GraphAuthenticator
 from .calendar import CalendarManager
 from .config import Config
@@ -74,17 +76,18 @@ class BirthdaySync:
                 if existing_date:
                     try:
                         # Parse the ISO date string
-                        existing_date_obj = datetime.fromisoformat(
+                        event_date = datetime.fromisoformat(
                             existing_date.replace("Z", "+00:00")
                         ).date()
                         # Compare month and day
                         if (
-                            existing_date_obj.month != birthday_date.month
-                            or existing_date_obj.day != birthday_date.day
+                            event_date.month != birthday_date.month
+                            or event_date.day != birthday_date.day
                         ):
                             needs_update = True
-                    except Exception:
-                        # If we can't parse, assume update is needed
+                    except (ValueError, AttributeError) as e:
+                        # If we can't parse, log and assume update is needed
+                        sentry_sdk.capture_exception(e)
                         needs_update = True
                 else:
                     # No date info, assume update is needed

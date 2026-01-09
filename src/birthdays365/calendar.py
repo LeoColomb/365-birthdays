@@ -60,6 +60,7 @@ class CalendarManager:
             return created_calendar.id
 
         except Exception as e:
+            sentry_sdk.capture_exception(e)
             print(f"Error accessing/creating calendar: {e}")
             return None
 
@@ -102,7 +103,7 @@ class CalendarManager:
         calendar_id: str,
         contact_name: str,
         birthday: datetime,
-        contact_id: str = None,
+        contact_id: str,
     ) -> bool:
         """Create a birthday event in the calendar with a reminder and recurrence.
 
@@ -110,7 +111,7 @@ class CalendarManager:
             calendar_id: ID of the calendar
             contact_name: Name of the contact
             birthday: Birthday date of the contact
-            contact_id: ID of the contact (optional)
+            contact_id: ID of the contact
 
         Returns:
             True if event was created successfully, False otherwise
@@ -155,10 +156,7 @@ class CalendarManager:
             # Add description with age and contact ID
             body = ItemBody()
             body.content_type = BodyType.Text
-            description_parts = [f"Age: {age}"]
-            if contact_id:
-                description_parts.append(f"Contact ID: {contact_id}")
-            body.content = "\n".join(description_parts)
+            body.content = f"Age: {age}\nContact ID: {contact_id}"
             event.body = body
 
             # Add reminder at event start
@@ -200,7 +198,7 @@ class CalendarManager:
         event_id: str,
         contact_name: str,
         birthday: datetime,
-        contact_id: str = None,
+        contact_id: str,
     ) -> bool:
         """Update an existing birthday event if the date has changed.
 
@@ -209,7 +207,7 @@ class CalendarManager:
             event_id: ID of the existing event
             contact_name: Name of the contact
             birthday: Birthday date of the contact
-            contact_id: ID of the contact (optional)
+            contact_id: ID of the contact
 
         Returns:
             True if event was updated successfully, False otherwise
@@ -252,7 +250,7 @@ class CalendarManager:
 
             recurrence_range = RecurrenceRange()
             recurrence_range.type = RecurrenceRangeType.NoEnd
-            recurrence_range.start_date = event_date
+            recurrence_range.start_date = birthday_date
 
             recurrence = PatternedRecurrence()
             recurrence.pattern = pattern
@@ -263,10 +261,7 @@ class CalendarManager:
             # Update description with age and contact ID
             body = ItemBody()
             body.content_type = BodyType.Text
-            description_parts = [f"Age: {age}"]
-            if contact_id:
-                description_parts.append(f"Contact ID: {contact_id}")
-            body.content = "\n".join(description_parts)
+            body.content = f"Age: {age}\nContact ID: {contact_id}"
             event.body = body
 
             # Update the event

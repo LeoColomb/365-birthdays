@@ -5,7 +5,7 @@ description = "Microsoft 365 Birthday Calendar Sync - Automatically sync birthda
 authors = [
     { name = "Léo Colombaro", email = "git@colombaro.fr" }
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "msgraph-sdk==1.5.4",
     "azure-identity==1.19.0",
@@ -31,7 +31,7 @@ dev = [
 
 [tool.ruff]
 line-length = 88
-target-version = "py38"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [

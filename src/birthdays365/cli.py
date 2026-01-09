@@ -22,8 +22,8 @@ def main() -> None:
         if config.sentry_dsn:
             sentry_sdk.init(
                 dsn=config.sentry_dsn,
-                traces_sample_rate=1.0,
-                profiles_sample_rate=1.0,
+                traces_sample_rate=0.1,  # Sample 10% of transactions
+                profiles_sample_rate=0.1,  # Sample 10% of profiles
             )
 
         sync = BirthdaySync(config)

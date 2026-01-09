@@ -184,7 +184,11 @@ To use the Birthday Sync workflow:
    - `TENANT_ID` - Your Microsoft Entra directory (tenant) ID
    - `CALENDAR_NAME` (optional) - Calendar name (defaults to "Birthdays")
    - `SENTRY_DSN` (optional) - Sentry DSN for error tracking
-3. The workflow runs daily at 6:00 AM UTC or can be triggered manually
+3. The workflow is scheduled to run daily at 6:00 AM UTC, but note that
+   the current implementation uses **device code flow authentication**
+   which requires interactive user login. For fully automated execution,
+   you can manually trigger the workflow using the **Run workflow** button
+   in the GitHub Actions tab and complete the authentication prompt.
 
 ## Features
 

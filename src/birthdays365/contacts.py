@@ -5,6 +5,7 @@
 
 from typing import Dict, List
 
+import sentry_sdk
 from msgraph import GraphServiceClient
 
 
@@ -42,6 +43,7 @@ class ContactManager:
                         )
 
         except Exception as e:
+            sentry_sdk.capture_exception(e)
             print(f"Error retrieving contacts: {e}")
 
         return contacts_with_birthdays
