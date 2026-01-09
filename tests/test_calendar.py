@@ -147,7 +147,7 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         birthday = datetime(1990, 1, 1, tzinfo=timezone.utc)
 
         result = await self.calendar_manager.create_birthday_event(
-            "calendar-123", "Test Person", birthday
+            "calendar-123", "Test Person", birthday, "contact-123"
         )
 
         self.assertTrue(result)

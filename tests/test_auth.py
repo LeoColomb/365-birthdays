@@ -15,11 +15,10 @@ def test_graph_authenticator_initialization():
     """Test GraphAuthenticator initialization."""
     config = Config(client_id="test_client", tenant_id="test_tenant")
     
-    with patch("birthdays365.auth.DeviceCodeCredential"):
-        authenticator = GraphAuthenticator(config)
-        
-        assert authenticator.config == config
-        assert authenticator.credential is not None
+    authenticator = GraphAuthenticator(config)
+    
+    assert authenticator.config == config
+    assert authenticator._client is None
 
 
 def test_graph_authenticator_get_client():
