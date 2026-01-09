@@ -165,6 +165,27 @@ uv run ruff check src/ tests/
 uv run ruff format src/ tests/
 ```
 
+### GitHub Actions Workflows
+
+The repository includes automated workflows:
+
+- **Tests** (`.github/workflows/test.yml`): Automatically runs the test
+  suite on every push and pull request
+- **Ruff** (`.github/workflows/ruff.yml`): Runs code quality checks
+- **Birthday Sync** (`.github/workflows/sync.yml`): Automated daily
+  birthday synchronization (requires repository secrets configuration)
+
+To use the Birthday Sync workflow:
+
+1. Go to your repository **Settings** > **Secrets and variables** >
+   **Actions**
+2. Add the following repository secrets:
+   - `CLIENT_ID` - Your Microsoft Entra application (client) ID
+   - `TENANT_ID` - Your Microsoft Entra directory (tenant) ID
+   - `CALENDAR_NAME` (optional) - Calendar name (defaults to "Birthdays")
+   - `SENTRY_DSN` (optional) - Sentry DSN for error tracking
+3. The workflow runs daily at 6:00 AM UTC or can be triggered manually
+
 ## Features
 
 - ✅ Interactive device code authentication
@@ -182,6 +203,7 @@ uv run ruff format src/ tests/
 - ✅ Uses official Microsoft Graph SDK for Python
 - ✅ Comprehensive test suite with pytest
 - ✅ Clean OOP architecture with modular design
+- ✅ GitHub Actions workflows for testing and automated syncing
 
 ## Optional: Sentry Integration
 
