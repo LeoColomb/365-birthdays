@@ -30,7 +30,7 @@ class GraphAuthenticator:
             Authenticated GraphServiceClient instance
         """
         if self._client is None:
-            print(f"Logging-in")
+            print(f"Logging-in...")
             credential = DeviceCodeCredential(
                 client_id=self.config.client_id,
                 tenant_id=self.config.tenant_id,

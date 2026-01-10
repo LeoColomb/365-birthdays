@@ -21,6 +21,8 @@ class Config:
     @classmethod
     def from_env(cls) -> "Config":
         """Load configuration from environment variables."""
+        print(f"Loading config...")
+
         load_dotenv()
 
         client_id = os.getenv("CLIENT_ID")
@@ -33,6 +35,8 @@ class Config:
                 "Missing required environment variables. "
                 "Please set CLIENT_ID and TENANT_ID."
             )
+
+        print(f"✓ Config loaded")
 
         return cls(
             client_id=client_id,
