@@ -35,16 +35,16 @@ class CalendarManager:
         self.graph_client = graph_client
         self.calendar_name = calendar_name
 
-    async def get_or_create_calendar(self) -> Optional[str]:
+    async def get_or_create_calendar(self) -> str:
         """Get the birthday calendar or create it if it doesn't exist.
 
         Returns:
             Calendar ID if successful, None otherwise
         """
         try:
+            raise Exception('calendars', self.graph_client.me)
             # Get all calendars for the authenticated user
             calendars = await self.graph_client.me.calendars.get()
-            raise Exception('calendars', calendars)
             # Look for existing birthday calendar
             if calendars and calendars.value:
                 for calendar in calendars.value:
@@ -61,8 +61,7 @@ class CalendarManager:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            print(f"Error accessing/creating calendar: {e}")
-            return None
+            raise Exception(f"Error accessing/creating calendar: {e}")
 
     async def get_existing_birthday_events(
         self, calendar_id: str
@@ -94,7 +93,7 @@ class CalendarManager:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            print(f"Warning: Could not check existing events: {e}")
+            raise Exception(f"Could not check existing events: {e}")
 
         return existing_events
 

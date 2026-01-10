@@ -34,18 +34,13 @@ class BirthdaySync:
 
         # Get or create the birthday calendar
         calendar_id = await self.calendar_manager.get_or_create_calendar()
-        if not calendar_id:
-            print("Failed to get/create birthday calendar")
-            return
-
         print(f"Using calendar: {self.config.calendar_name}")
 
         # Get existing birthday events to avoid duplicates
         existing_events = await self.calendar_manager.get_existing_birthday_events(
             calendar_id
         )
-        if existing_events:
-            print(f"Found {len(existing_events)} existing birthday events")
+        print(f"Found {len(existing_events)} existing birthday events")
 
         # Get contacts with birthdays
         contacts = await self.contact_manager.get_contacts_with_birthdays()
