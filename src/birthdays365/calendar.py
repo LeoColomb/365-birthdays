@@ -42,6 +42,7 @@ class CalendarManager:
             Calendar ID if successful, None otherwise
         """
         try:
+            sys.exit(1)
             # Get all calendars for the authenticated user
             calendars = await self.graph_client.me.calendars.get()
 
