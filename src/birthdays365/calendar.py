@@ -23,16 +23,18 @@ class CalendarManager:
     """Manages calendar operations via Microsoft Graph API."""
 
     def __init__(
-        self, graph_client: GraphServiceClient, calendar_name: str = "Birthdays"
+        self, graph_client: GraphServiceClient, calendar_name: str = "Birthdays", target_user_upn: str | None = None
     ):
         """Initialize the calendar manager.
 
         Args:
             graph_client: Authenticated GraphServiceClient instance
             calendar_name: Name of the calendar to use
+            target_user_upn: Optional user UPN for application permissions (uses /me if not provided)
         """
         self.graph_client = graph_client
         self.calendar_name = calendar_name
+        self.target_user_upn = target_user_upn
 
     async def get_or_create_calendar(self) -> str:
         """Get the birthday calendar or create it if it doesn't exist.
@@ -41,8 +43,12 @@ class CalendarManager:
             Calendar ID if successful, None otherwise
         """
         try:
-            # Get all calendars for the authenticated user
-            calendars = await self.graph_client.me.calendars.get()
+            # Get all calendars for the authenticated user or target user
+            if self.target_user_upn:
+                calendars = await self.graph_client.users.by_user_id(self.target_user_upn).calendars.get()
+            else:
+                calendars = await self.graph_client.me.calendars.get()
+
             # Look for existing birthday calendar
             if calendars and calendars.value:
                 for calendar in calendars.value:
@@ -53,7 +59,10 @@ class CalendarManager:
             new_calendar = Calendar()
             new_calendar.name = self.calendar_name
 
-            created_calendar = await self.graph_client.me.calendars.post(new_calendar)
+            if self.target_user_upn:
+                created_calendar = await self.graph_client.users.by_user_id(self.target_user_upn).calendars.post(new_calendar)
+            else:
+                created_calendar = await self.graph_client.me.calendars.post(new_calendar)
 
             return created_calendar.id
 
@@ -75,9 +84,14 @@ class CalendarManager:
         existing_events = {}
 
         try:
-            events = await self.graph_client.me.calendars.by_calendar_id(
-                calendar_id
-            ).events.get()
+            if self.target_user_upn:
+                events = await self.graph_client.users.by_user_id(self.target_user_upn).calendars.by_calendar_id(
+                    calendar_id
+                ).events.get()
+            else:
+                events = await self.graph_client.me.calendars.by_calendar_id(
+                    calendar_id
+                ).events.get()
 
             if events and events.value:
                 for event in events.value:
@@ -178,9 +192,14 @@ class CalendarManager:
             event.recurrence = recurrence
 
             # Create the event
-            await self.graph_client.me.calendars.by_calendar_id(
-                calendar_id
-            ).events.post(event)
+            if self.target_user_upn:
+                await self.graph_client.users.by_user_id(self.target_user_upn).calendars.by_calendar_id(
+                    calendar_id
+                ).events.post(event)
+            else:
+                await self.graph_client.me.calendars.by_calendar_id(
+                    calendar_id
+                ).events.post(event)
 
             return True
 
@@ -262,11 +281,18 @@ class CalendarManager:
             event.body = body
 
             # Update the event
-            await (
-                self.graph_client.me.calendars.by_calendar_id(calendar_id)
-                .events.by_event_id(event_id)
-                .patch(event)
-            )
+            if self.target_user_upn:
+                await (
+                    self.graph_client.users.by_user_id(self.target_user_upn).calendars.by_calendar_id(calendar_id)
+                    .events.by_event_id(event_id)
+                    .patch(event)
+                )
+            else:
+                await (
+                    self.graph_client.me.calendars.by_calendar_id(calendar_id)
+                    .events.by_event_id(event_id)
+                    .patch(event)
+                )
 
             return True
 

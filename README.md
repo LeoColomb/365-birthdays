@@ -96,17 +96,23 @@ For automated scenarios like GitHub Actions:
 
 **User Context in Client Secret Flow:**
 
-When using client credentials (client secret), the application runs with **application-level permissions**, not as a specific user. This means:
+When using client credentials (client secret) with **Application permissions**, the application runs with application-level permissions and can access any user's data. You **must** specify which user's data to sync using the `TARGET_USER_UPN` environment variable.
 
-- The app can access **any user's** contacts and calendars in the organization
-- You must specify which user's data to sync by setting environment variables or modifying the code
-- **By default, the app will need to be configured to target a specific user's mailbox**
-- This is controlled via Microsoft Graph API calls using the user's UPN (User Principal Name) or user ID
+**Setup for Client Credentials with Application Permissions:**
 
-To sync a specific user's data when using client credentials:
-1. The admin must grant the appropriate application permissions
-2. The application will need to specify the user context in API calls (e.g., `/users/{userPrincipalName}/contacts`)
-3. You can set the target user via additional configuration (see "Advanced Configuration" below)
+1. The admin must grant **Application permissions** (not Delegated):
+   - `Calendars.ReadWrite` (Application)
+   - `Contacts.Read` (Application)
+2. Create a client secret in your app registration
+3. Set the `TARGET_USER_UPN` environment variable to the user's email address (User Principal Name)
+   - Example: `TARGET_USER_UPN=john.doe@company.com`
+4. The application will access `/users/{TARGET_USER_UPN}/contacts` and `/users/{TARGET_USER_UPN}/calendars`
+
+**Backward Compatibility:**
+
+- If `TARGET_USER_UPN` is **not set**, the app uses `/me` endpoints (delegated permissions)
+- This maintains backward compatibility with existing interactive setups
+- For full automation in CI/CD, you **must** set `TARGET_USER_UPN`
 
 ### 4. Configure Environment Variables
 
@@ -120,6 +126,7 @@ To sync a specific user's data when using client credentials:
   - `CLIENT_ID`: Application (client) ID from your app registration
   - `TENANT_ID`: Directory (tenant) ID from your app registration
   - `CLIENT_SECRET`: (Optional) Client secret for non-interactive authentication. If not provided, device code flow will be used.
+  - `TARGET_USER_UPN`: (Optional, but **required** when using CLIENT_SECRET with Application permissions) User's email address (e.g., user@company.com) to specify whose contacts and calendar to sync
   - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use
     (default: "Birthdays")
 
@@ -208,22 +215,30 @@ When `CLIENT_SECRET` is provided, the app uses client credentials authentication
 3. The app runs with **application permissions**
 4. It can access any user's data in the organization (subject to permissions)
 
-**User Context:** The current implementation uses the **authenticated user's context** when using delegated permissions. When using application permissions with client credentials:
+**User Context Configuration:**
 
-- **Current Behavior**: The application uses the `.default` scope which inherits from the permission grants. With delegated permissions, it will authenticate as the service principal, but Microsoft Graph API calls will need to specify which user's resources to access.
-- **For Automated Scenarios**: To target a specific user's contacts and calendar, the application would need to be modified to use user-specific endpoints like:
-  - `/users/{userPrincipalName}/contacts` instead of `/me/contacts`
-  - `/users/{userPrincipalName}/calendars` instead of `/me/calendars`
+The application now supports targeting specific users via the `TARGET_USER_UPN` environment variable:
 
-**Important Limitation**: The current implementation is designed for interactive use with delegated permissions. For fully automated scenarios using application permissions, you would need to:
+- **With `TARGET_USER_UPN` set** (e.g., `TARGET_USER_UPN=john.doe@company.com`):
+  - Uses `/users/{TARGET_USER_UPN}/contacts` and `/users/{TARGET_USER_UPN}/calendars`
+  - Syncs the specified user's birthdays
+  - **Requires Application permissions** in Azure AD
+  - Perfect for fully automated CI/CD scenarios
+
+- **Without `TARGET_USER_UPN`** (legacy/backward compatible):
+  - Uses `/me/contacts` and `/me/calendars`
+  - Works with delegated permissions
+  - May require interactive login depending on permission configuration
+
+**Setup for Full Automation:**
 
 1. Grant **Application permissions** (not Delegated) in Azure AD:
    - `Calendars.ReadWrite` (Application permission)
    - `Contacts.Read` (Application permission)
-2. Modify the code to specify a target user (e.g., via environment variable `TARGET_USER_UPN`)
-3. Update API calls to use `/users/{userPrincipalName}/` instead of `/me/`
-
-This would allow GitHub Actions or other automation to sync a specific user's birthdays without interactive login.
+2. Create a client secret
+3. Set `CLIENT_SECRET` in your environment
+4. Set `TARGET_USER_UPN` to the email address of the user whose birthdays to sync
+5. The app will automatically use the user-specific endpoints
 
 ## Development
 
@@ -282,14 +297,14 @@ To use the Birthday Sync workflow:
      - `CLIENT_ID` - Your Microsoft Entra application (client) ID
      - `TENANT_ID` - Your Microsoft Entra directory (tenant) ID
      - `CLIENT_SECRET` - Your client secret value (for non-interactive auth)
+     - `TARGET_USER_UPN` - Email address of the user whose birthdays to sync (e.g., user@company.com)
      - `CALENDAR_NAME` (optional) - Calendar name (defaults to "Birthdays")
      - `SENTRY_DSN` (optional) - Sentry DSN for error tracking
 
 3. **Enable the Workflow**:
    - The workflow is scheduled to run daily at 6:00 AM UTC
    - You can also manually trigger it using the **Run workflow** button in the GitHub Actions tab
-
-**Note**: When using client credentials (CLIENT_SECRET) with application permissions, the current implementation will need modification to specify which user's data to sync. See "Authentication Methods Explained" section above for details.
+   - The workflow will automatically sync birthdays for the specified user without any interaction
 
 ## Features
 

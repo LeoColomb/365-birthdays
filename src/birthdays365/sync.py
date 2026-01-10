@@ -25,8 +25,15 @@ class BirthdaySync:
         self.config = config
         self.authenticator = GraphAuthenticator(config)
         self.graph_client = self.authenticator.get_client()
-        self.calendar_manager = CalendarManager(self.graph_client, config.calendar_name)
-        self.contact_manager = ContactManager(self.graph_client)
+        self.calendar_manager = CalendarManager(
+            self.graph_client,
+            config.calendar_name,
+            config.target_user_upn
+        )
+        self.contact_manager = ContactManager(
+            self.graph_client,
+            config.target_user_upn
+        )
 
     async def sync(self) -> None:
         """Execute the birthday synchronization process."""

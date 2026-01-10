@@ -17,6 +17,7 @@ class Config:
     tenant_id: str
     calendar_name: str = "Birthdays"
     client_secret: str | None = None
+    target_user_upn: str | None = None
     sentry_dsn: str | None = None
 
     @classmethod
@@ -30,6 +31,7 @@ class Config:
         tenant_id = os.getenv("TENANT_ID")
         calendar_name = os.getenv("CALENDAR_NAME", "Birthdays")
         client_secret = os.getenv("CLIENT_SECRET")
+        target_user_upn = os.getenv("TARGET_USER_UPN")
         sentry_dsn = os.getenv("SENTRY_DSN")
 
         if not client_id or not tenant_id:
@@ -45,5 +47,6 @@ class Config:
             tenant_id=tenant_id,
             calendar_name=calendar_name,
             client_secret=client_secret,
+            target_user_upn=target_user_upn,
             sentry_dsn=sentry_dsn,
         )

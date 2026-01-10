@@ -11,13 +11,15 @@ from msgraph import GraphServiceClient
 class ContactManager:
     """Manages contact operations via Microsoft Graph API."""
 
-    def __init__(self, graph_client: GraphServiceClient):
+    def __init__(self, graph_client: GraphServiceClient, target_user_upn: str | None = None):
         """Initialize the contact manager.
 
         Args:
             graph_client: Authenticated GraphServiceClient instance
+            target_user_upn: Optional user UPN for application permissions (uses /me if not provided)
         """
         self.graph_client = graph_client
+        self.target_user_upn = target_user_upn
 
     async def get_contacts_with_birthdays(self) -> list[dict]:
         """Retrieve all contacts that have a birthday set.
@@ -28,7 +30,11 @@ class ContactManager:
         contacts_with_birthdays = []
 
         try:
-            contacts = await self.graph_client.me.contacts.get()
+            # Use user-specific endpoint if target_user_upn is provided, otherwise use /me
+            if self.target_user_upn:
+                contacts = await self.graph_client.users.by_user_id(self.target_user_upn).contacts.get()
+            else:
+                contacts = await self.graph_client.me.contacts.get()
 
             if contacts and contacts.value:
                 for contact in contacts.value:
