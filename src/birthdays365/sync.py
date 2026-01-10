@@ -47,6 +47,7 @@ class BirthdaySync:
         if existing_events:
             print(f"Found {len(existing_events)} existing birthday events")
 
+        sys.exit(1)
         # Get contacts with birthdays
         contacts = await self.contact_manager.get_contacts_with_birthdays()
         print(f"Found {len(contacts)} contacts with birthdays")

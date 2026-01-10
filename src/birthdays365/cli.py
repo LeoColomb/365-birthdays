@@ -26,7 +26,6 @@ def main() -> None:
             )
 
         sync = BirthdaySync(config)
-        sys.exit(1)
         asyncio.run(sync.sync())
     except ValueError as e:
         if config and config.sentry_dsn:
