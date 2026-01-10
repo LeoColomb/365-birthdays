@@ -12,7 +12,8 @@ from .config import Config
 class GraphAuthenticator:
     """Handles authentication with Microsoft Graph API."""
 
-    SCOPES = ["Calendars.ReadWrite", "Contacts.Read", "User.Read"]
+    # Use .default scope which includes all delegated permissions granted in app registration
+    SCOPES = ["https://graph.microsoft.com/.default"]
 
     def __init__(self, config: Config):
         """Initialize the authenticator.
