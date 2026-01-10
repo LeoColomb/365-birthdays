@@ -3,7 +3,7 @@
 
 """Authentication handling for Microsoft Graph API."""
 
-from azure.identity import DeviceCodeCredential
+from azure.identity import ClientSecretCredential, DeviceCodeCredential
 from msgraph import GraphServiceClient
 
 from .config import Config
@@ -31,14 +31,27 @@ class GraphAuthenticator:
             Authenticated GraphServiceClient instance
         """
         if self._client is None:
-            print(f"Logging-in...")
-            credential = DeviceCodeCredential(
-                client_id=self.config.client_id,
-                tenant_id=self.config.tenant_id,
-            )
+            print("Logging-in...")
+
+            # Use client secret credential for non-interactive auth (e.g., GitHub Actions)
+            if self.config.client_secret:
+                print("Using client secret authentication...")
+                credential = ClientSecretCredential(
+                    client_id=self.config.client_id,
+                    client_secret=self.config.client_secret,
+                    tenant_id=self.config.tenant_id,
+                )
+            else:
+                # Fall back to device code flow for interactive auth
+                print("Using device code authentication...")
+                credential = DeviceCodeCredential(
+                    client_id=self.config.client_id,
+                    tenant_id=self.config.tenant_id,
+                )
+
             self._client = GraphServiceClient(
                 credentials=credential, scopes=self.SCOPES
             )
-            print(f"✓ Logged-in with MS Graph")
+            print("✓ Logged-in with MS Graph")
 
         return self._client
