@@ -42,7 +42,6 @@ class CalendarManager:
             Calendar ID if successful, None otherwise
         """
         try:
-            raise Exception('calendars', self.graph_client.me.calendars.get())
             # Get all calendars for the authenticated user
             calendars = await self.graph_client.me.calendars.get()
             # Look for existing birthday calendar
