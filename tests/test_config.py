@@ -19,6 +19,7 @@ class TestConfig(unittest.TestCase):
             "CLIENT_ID": "test-client-id",
             "TENANT_ID": "test-tenant-id",
             "CALENDAR_NAME": "TestCalendar",
+            "CLIENT_SECRET": "test-client-secret",
             "SENTRY_DSN": "https://test@sentry.io/123",
         },
     )
@@ -29,6 +30,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.client_id, "test-client-id")
         self.assertEqual(config.tenant_id, "test-tenant-id")
         self.assertEqual(config.calendar_name, "TestCalendar")
+        self.assertEqual(config.client_secret, "test-client-secret")
         self.assertEqual(config.sentry_dsn, "https://test@sentry.io/123")
 
     @patch.dict(
@@ -46,6 +48,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.client_id, "test-client-id")
         self.assertEqual(config.tenant_id, "test-tenant-id")
         self.assertEqual(config.calendar_name, "Birthdays")  # default
+        self.assertIsNone(config.client_secret)  # default
         self.assertIsNone(config.sentry_dsn)  # default
 
     @patch.dict(os.environ, {}, clear=True)

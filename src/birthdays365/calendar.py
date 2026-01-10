@@ -4,7 +4,6 @@
 """Calendar operations for Microsoft Graph API."""
 
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Optional
 
 import sentry_sdk
 from msgraph import GraphServiceClient
@@ -64,7 +63,7 @@ class CalendarManager:
 
     async def get_existing_birthday_events(
         self, calendar_id: str
-    ) -> Dict[str, Dict[str, str]]:
+    ) -> dict[str, dict[str, str]]:
         """Get existing birthday events to avoid duplicates.
 
         Args:

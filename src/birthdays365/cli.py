@@ -15,7 +15,7 @@ from .sync import BirthdaySync
 def main() -> None:
     """Main entry point for the CLI application."""
 
-    print(f"Running 365 Birthdays...")
+    print("Running 365 Birthdays...")
     config = None
     try:
         config = Config.from_env()

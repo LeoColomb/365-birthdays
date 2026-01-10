@@ -3,7 +3,6 @@
 
 """Contact operations for Microsoft Graph API."""
 
-from typing import Dict, List
 
 import sentry_sdk
 from msgraph import GraphServiceClient
@@ -20,7 +19,7 @@ class ContactManager:
         """
         self.graph_client = graph_client
 
-    async def get_contacts_with_birthdays(self) -> List[Dict]:
+    async def get_contacts_with_birthdays(self) -> list[dict]:
         """Retrieve all contacts that have a birthday set.
 
         Returns:

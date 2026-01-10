@@ -16,18 +16,20 @@ class Config:
     client_id: str
     tenant_id: str
     calendar_name: str = "Birthdays"
+    client_secret: str | None = None
     sentry_dsn: str | None = None
 
     @classmethod
     def from_env(cls) -> "Config":
         """Load configuration from environment variables."""
-        print(f"Loading config...")
+        print("Loading config...")
 
         load_dotenv()
 
         client_id = os.getenv("CLIENT_ID")
         tenant_id = os.getenv("TENANT_ID")
         calendar_name = os.getenv("CALENDAR_NAME", "Birthdays")
+        client_secret = os.getenv("CLIENT_SECRET")
         sentry_dsn = os.getenv("SENTRY_DSN")
 
         if not client_id or not tenant_id:
@@ -36,11 +38,12 @@ class Config:
                 "Please set CLIENT_ID and TENANT_ID."
             )
 
-        print(f"✓ Config loaded")
+        print("✓ Config loaded")
 
         return cls(
             client_id=client_id,
             tenant_id=tenant_id,
             calendar_name=calendar_name,
+            client_secret=client_secret,
             sentry_dsn=sentry_dsn,
         )

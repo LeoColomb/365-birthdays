@@ -38,6 +38,8 @@ This Python package uses the Microsoft Graph API to:
 
 ### 2. Configure API Permissions
 
+**For Interactive Use (Device Code Flow):**
+
 1. In your app registration, go to **API permissions**
 2. Click **Add a permission**
 3. Select **Microsoft Graph** > **Delegated permissions**
@@ -48,14 +50,63 @@ This Python package uses the Microsoft Graph API to:
 5. Click **Add permissions**
 6. Click **Grant admin consent** (requires admin privileges)
 
-### 3. Configure Public Client Settings
+**For Automated/Non-Interactive Use (Client Credentials Flow):**
 
-Since this app uses device code flow for authentication:
+For scenarios like GitHub Actions or scheduled scripts, you'll need **Application permissions** instead:
+
+1. In your app registration, go to **API permissions**
+2. Click **Add a permission**
+3. Select **Microsoft Graph** > **Application permissions**
+4. Add the following permissions:
+  - `Calendars.ReadWrite` - Create and manage calendar events for all users
+  - `Contacts.Read` - Read contacts in all mailboxes
+5. Click **Add permissions**
+6. Click **Grant admin consent** (requires admin privileges)
+
+**Note:** Application permissions require admin consent and grant access to data across all users in the organization. Use with caution and follow the principle of least privilege.
+
+### 3. Configure Authentication Method
+
+The application supports two authentication methods:
+
+**Option A: Device Code Flow (Interactive - Default)**
+
+For local/interactive use:
 
 1. Go to **Authentication** in your app registration
 2. Under **Advanced settings** > **Allow public client flows**
 3. Set **Enable the following mobile and desktop flows** to **Yes**
 4. Click **Save**
+
+**Option B: Client Secret Flow (Non-Interactive - for Automation)**
+
+For automated scenarios like GitHub Actions:
+
+1. Go to **Certificates & secrets** in your app registration
+2. Under **Client secrets**, click **New client secret**
+3. Add a description (e.g., "GitHub Actions Secret")
+4. Choose an expiration period
+5. Click **Add**
+6. **Important:** Copy the secret value immediately - it won't be shown again
+7. Save this value as `CLIENT_SECRET` in your environment variables
+
+**Choosing the Right Method:**
+- **Device Code Flow**: Use for local development or manual runs. Requires user interaction.
+- **Client Secret Flow**: Use for CI/CD pipelines, scheduled tasks, or any non-interactive automation.
+
+**User Context in Client Secret Flow:**
+
+When using client credentials (client secret), the application runs with **application-level permissions**, not as a specific user. This means:
+
+- The app can access **any user's** contacts and calendars in the organization
+- You must specify which user's data to sync by setting environment variables or modifying the code
+- **By default, the app will need to be configured to target a specific user's mailbox**
+- This is controlled via Microsoft Graph API calls using the user's UPN (User Principal Name) or user ID
+
+To sync a specific user's data when using client credentials:
+1. The admin must grant the appropriate application permissions
+2. The application will need to specify the user context in API calls (e.g., `/users/{userPrincipalName}/contacts`)
+3. You can set the target user via additional configuration (see "Advanced Configuration" below)
 
 ### 4. Configure Environment Variables
 
@@ -68,6 +119,7 @@ Since this app uses device code flow for authentication:
 2. Edit `.env` and fill in your values:
   - `CLIENT_ID`: Application (client) ID from your app registration
   - `TENANT_ID`: Directory (tenant) ID from your app registration
+  - `CLIENT_SECRET`: (Optional) Client secret for non-interactive authentication. If not provided, device code flow will be used.
   - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use
     (default: "Birthdays")
 
@@ -133,6 +185,46 @@ tests/
 └── test_sync.py     # Synchronization logic tests
 ```
 
+## Authentication Methods Explained
+
+### Device Code Flow (Interactive)
+
+When no `CLIENT_SECRET` is provided, the app uses device code authentication:
+
+1. You run the application
+2. It displays a URL and code
+3. You visit the URL in a browser and enter the code
+4. You authenticate with your Microsoft 365 account
+5. The app runs with **your user context** - it accesses your contacts and calendar
+
+**User Context:** The authenticated user (you)
+
+### Client Secret Flow (Non-Interactive)
+
+When `CLIENT_SECRET` is provided, the app uses client credentials authentication:
+
+1. The app authenticates using CLIENT_ID, TENANT_ID, and CLIENT_SECRET
+2. No user interaction required
+3. The app runs with **application permissions**
+4. It can access any user's data in the organization (subject to permissions)
+
+**User Context:** The current implementation uses the **authenticated user's context** when using delegated permissions. When using application permissions with client credentials:
+
+- **Current Behavior**: The application uses the `.default` scope which inherits from the permission grants. With delegated permissions, it will authenticate as the service principal, but Microsoft Graph API calls will need to specify which user's resources to access.
+- **For Automated Scenarios**: To target a specific user's contacts and calendar, the application would need to be modified to use user-specific endpoints like:
+  - `/users/{userPrincipalName}/contacts` instead of `/me/contacts`
+  - `/users/{userPrincipalName}/calendars` instead of `/me/calendars`
+
+**Important Limitation**: The current implementation is designed for interactive use with delegated permissions. For fully automated scenarios using application permissions, you would need to:
+
+1. Grant **Application permissions** (not Delegated) in Azure AD:
+   - `Calendars.ReadWrite` (Application permission)
+   - `Contacts.Read` (Application permission)
+2. Modify the code to specify a target user (e.g., via environment variable `TARGET_USER_UPN`)
+3. Update API calls to use `/users/{userPrincipalName}/` instead of `/me/`
+
+This would allow GitHub Actions or other automation to sync a specific user's birthdays without interactive login.
+
 ## Development
 
 ### Running Tests
@@ -177,22 +269,32 @@ The repository includes automated workflows:
 
 To use the Birthday Sync workflow:
 
-1. Go to your repository **Settings** > **Secrets and variables** >
-   **Actions**
-2. Add the following repository secrets:
-   - `CLIENT_ID` - Your Microsoft Entra application (client) ID
-   - `TENANT_ID` - Your Microsoft Entra directory (tenant) ID
-   - `CALENDAR_NAME` (optional) - Calendar name (defaults to "Birthdays")
-   - `SENTRY_DSN` (optional) - Sentry DSN for error tracking
-3. The workflow is scheduled to run daily at 6:00 AM UTC, but note that
-   the current implementation uses **device code flow authentication**
-   which requires interactive user login. For fully automated execution,
-   you can manually trigger the workflow using the **Run workflow** button
-   in the GitHub Actions tab and complete the authentication prompt.
+1. **Configure Application Permissions** (for automated sync):
+   - In Microsoft Entra, add **Application permissions** (not Delegated):
+     - `Calendars.ReadWrite` (Application)
+     - `Contacts.Read` (Application)
+   - Grant admin consent for these permissions
+   - Create a client secret in **Certificates & secrets**
+
+2. **Add Repository Secrets**:
+   - Go to your repository **Settings** > **Secrets and variables** > **Actions**
+   - Add the following repository secrets:
+     - `CLIENT_ID` - Your Microsoft Entra application (client) ID
+     - `TENANT_ID` - Your Microsoft Entra directory (tenant) ID
+     - `CLIENT_SECRET` - Your client secret value (for non-interactive auth)
+     - `CALENDAR_NAME` (optional) - Calendar name (defaults to "Birthdays")
+     - `SENTRY_DSN` (optional) - Sentry DSN for error tracking
+
+3. **Enable the Workflow**:
+   - The workflow is scheduled to run daily at 6:00 AM UTC
+   - You can also manually trigger it using the **Run workflow** button in the GitHub Actions tab
+
+**Note**: When using client credentials (CLIENT_SECRET) with application permissions, the current implementation will need modification to specify which user's data to sync. See "Authentication Methods Explained" section above for details.
 
 ## Features
 
-- ✅ Interactive device code authentication
+- ✅ Interactive device code authentication (for local use)
+- ✅ Client secret authentication (for automation/CI-CD)
 - ✅ Automatic calendar creation
 - ✅ All-day birthday events with yearly recurrence
 - ✅ Reminders enabled for birthday events
@@ -247,27 +349,39 @@ This application requires the following:
 
 2. **Microsoft Entra App Registration**: An app registered in Microsoft
   Entra (Azure AD) with:
-  - **Application Type**: Public client application
-  - **Redirect URI**: Not required for device code flow
+  - **Application Type**: 
+    - Public client application (for device code flow)
+    - Or confidential client (for client secret flow)
+  - **Redirect URI**: Not required for either flow
   - **API Permissions**:
-     - `Calendars.ReadWrite` (Delegated)
-     - `Contacts.Read` (Delegated)
-     - `User.Read` (Delegated)
-   - **Admin Consent**: Granted for all permissions
+    - For interactive use (Delegated permissions):
+      - `Calendars.ReadWrite` (Delegated)
+      - `Contacts.Read` (Delegated)
+      - `User.Read` (Delegated)
+    - For automated use (Application permissions):
+      - `Calendars.ReadWrite` (Application)
+      - `Contacts.Read` (Application)
+  - **Admin Consent**: Granted for all permissions
+  - **Client Secret**: Required only for non-interactive authentication
 
 3. **Public Client Flow**: Enabled in the app registration to support
    device code authentication
 
 ### How It Works
 
-1. **Authentication**: Uses device code flow - you'll authenticate via
-   browser
-2. **Data Reading**: Reads contacts from your Microsoft 365 account via
-   Graph API
-3. **Calendar Management**: Creates/updates events in a dedicated calendar
-4. **Recurrence**: Events repeat annually on the same date
-5. **Smart Updates**: Detects when contact birthdays change and updates
-   events accordingly
+**Device Code Flow (Interactive):**
+1. **Authentication**: You'll authenticate via browser using a device code
+2. **User Context**: Runs as the authenticated user
+3. **Data Reading**: Reads contacts from your Microsoft 365 account via Graph API
+4. **Calendar Management**: Creates/updates events in your dedicated calendar
+5. **Recurrence**: Events repeat annually on the same date
+6. **Smart Updates**: Detects when contact birthdays change and updates events accordingly
+
+**Client Secret Flow (Non-Interactive):**
+1. **Authentication**: Authenticates using client ID, tenant ID, and client secret
+2. **User Context**: Runs with application permissions (can access any user's data)
+3. **Data Access**: Same as above, but requires specifying target user for full automation
+4. **Ideal for**: GitHub Actions, scheduled tasks, CI/CD pipelines
 
 ### Data Privacy
 
@@ -287,22 +401,33 @@ This application requires the following:
 
 ## Security Considerations
 
-- Never commit your `.env` file to version control
-- Device code flow provides secure, interactive authentication
-- No client secrets needed - more secure for desktop applications
-- Apply principle of least privilege for API permissions
-- Admin consent ensures proper authorization
+- **Device Code Flow**: Provides secure, interactive authentication without storing secrets
+- **Client Secret Flow**: Requires careful secret management - never commit secrets to version control
+- **Client Secret Storage**: 
+  - For local use: Store in `.env` file (gitignored)
+  - For GitHub Actions: Use encrypted repository secrets
+  - Rotate secrets regularly
+- **Permissions**: Apply principle of least privilege
+  - Use Delegated permissions for interactive use
+  - Use Application permissions only when necessary for automation
+- **Admin Consent**: Ensures proper authorization for all permissions
+- **Secret Expiration**: Client secrets expire - monitor and rotate them before expiration
 
 ## Troubleshooting
 
 ### Authentication Errors
 
-If you encounter authentication errors:
-
+**Device Code Flow:**
 1. Verify your `CLIENT_ID` and `TENANT_ID` are correct
-2. Ensure admin consent was granted for the API permissions
+2. Ensure admin consent was granted for the Delegated API permissions
 3. Check that public client flows are enabled in your app registration
-4. Make sure you complete the device code authentication flow
+4. Make sure you complete the device code authentication flow in the browser
+
+**Client Secret Flow:**
+1. Verify `CLIENT_ID`, `TENANT_ID`, and `CLIENT_SECRET` are all correct
+2. Check that the client secret hasn't expired
+3. Ensure admin consent was granted for the Application API permissions
+4. Verify the secret value is copied correctly (no extra spaces/characters)
 
 ### Permission Errors
 
