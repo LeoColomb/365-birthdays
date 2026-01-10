@@ -30,6 +30,7 @@ class GraphAuthenticator:
             Authenticated GraphServiceClient instance
         """
         if self._client is None:
+            print(f"Logging-in")
             credential = DeviceCodeCredential(
                 client_id=self.config.client_id,
                 tenant_id=self.config.tenant_id,
@@ -37,5 +38,6 @@ class GraphAuthenticator:
             self._client = GraphServiceClient(
                 credentials=credential, scopes=self.SCOPES
             )
+            print(f"✓ Logged-in with MS Graph")
 
         return self._client

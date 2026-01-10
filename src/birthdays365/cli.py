@@ -18,12 +18,9 @@ def main() -> None:
     try:
         config = Config.from_env()
 
-        # Initialize Sentry if DSN is configured
         if config.sentry_dsn:
             sentry_sdk.init(
                 dsn=config.sentry_dsn,
-                traces_sample_rate=0.1,  # Sample 10% of transactions
-                profiles_sample_rate=0.1,  # Sample 10% of profiles
             )
 
         sync = BirthdaySync(config)
