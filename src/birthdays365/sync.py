@@ -101,11 +101,11 @@ class BirthdaySync:
                         calendar_id, event_info["id"], contact_name, birthday, contact_id
                     ):
                         updated_count += 1
-                        print(f"↻ Updated event for {contact_name}")
+                        print("↻ Updated event")
                     else:
-                        print(f"✗ Failed to update event for {contact_name}")
+                        print("✗ Failed to update event")
                 else:
-                    print(f"⊙ Skipped {contact_name} (already up to date)")
+                    print("⊙ Skipped (already up to date)")
                     skipped_count += 1
                 continue
 
@@ -114,9 +114,9 @@ class BirthdaySync:
                 calendar_id, contact_name, birthday, contact_id
             ):
                 success_count += 1
-                print(f"✓ Created event for {contact_name}")
+                print("✓ Created event")
             else:
-                print(f"✗ Failed to create event for {contact_name}")
+                print("✗ Failed to create event")
 
         print(
             f"\nSync complete: {success_count} created, {updated_count} updated, "
