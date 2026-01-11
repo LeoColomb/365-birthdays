@@ -11,6 +11,7 @@ from msgraph.generated.models.body_type import BodyType
 from msgraph.generated.models.calendar import Calendar
 from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
 from msgraph.generated.models.event import Event
+from msgraph.generated.models.free_busy_status import FreeBusyStatus
 from msgraph.generated.models.item_body import ItemBody
 from msgraph.generated.models.patterned_recurrence import PatternedRecurrence
 from msgraph.generated.models.recurrence_pattern import RecurrencePattern
@@ -158,13 +159,13 @@ class CalendarManager:
         event.subject = contact_name
         event.is_all_day = True
         event.categories = ["Birthday"]
+        event.show_as = FreeBusyStatus.Free
 
         # Add extended property for birthday icon (cake icon)
         # Using MAPI property for icon index
-        # PidLidAppointmentColor = 0x00008214 (Birthday icon)
         icon_property = SingleValueLegacyExtendedProperty()
-        icon_property.id = "Integer 0x8214"
-        icon_property.value = "5"  # Birthday icon value
+        icon_property.id = "Integer {11000E07-B51B-40D6-AF21-CAA85EDAB1D0} Id 0x0027"
+        icon_property.value = "Cake"
         event.single_value_extended_properties = [icon_property]
 
         # Set start and end dates
