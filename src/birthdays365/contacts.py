@@ -55,14 +55,16 @@ class ContactManager:
                             )
 
                 # Check if there's a next page
-                if contacts_response.odata_next_link and hasattr(
-                    request_builder, "with_url"
-                ):
-                    # Get next page
-                    request_builder = request_builder.with_url(
-                        contacts_response.odata_next_link
-                    )
-                    contacts_response = await request_builder.get()
+                if contacts_response.odata_next_link:
+                    # Try to get next page using with_url if available
+                    try:
+                        request_builder = request_builder.with_url(
+                            contacts_response.odata_next_link
+                        )
+                        contacts_response = await request_builder.get()
+                    except (AttributeError, TypeError):
+                        # If with_url is not available, stop pagination
+                        break
                 else:
                     # No more pages
                     break

@@ -109,7 +109,10 @@ class CalendarManager:
                     # Check if this is a birthday event by checking categories
                     if event.categories and "Birthday" in event.categories:
                         # Remove emoji from subject to get just the contact name
-                        contact_name = event.subject.replace("🎂 ", "")
+                        # Handle both new format (with emoji) and old format (without)
+                        contact_name = event.subject
+                        if contact_name.startswith("🎂 "):
+                            contact_name = contact_name[3:]  # Remove "🎂 " prefix
                         existing_events[contact_name] = {
                             "id": event.id,
                             "start": (event.start.date_time if event.start else None),
