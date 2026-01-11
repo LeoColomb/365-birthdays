@@ -3,7 +3,6 @@
 
 """Contact operations for Microsoft Graph API."""
 
-
 import sentry_sdk
 from msgraph import GraphServiceClient
 
@@ -11,7 +10,9 @@ from msgraph import GraphServiceClient
 class ContactManager:
     """Manages contact operations via Microsoft Graph API."""
 
-    def __init__(self, graph_client: GraphServiceClient, target_user_upn: str | None = None):
+    def __init__(
+        self, graph_client: GraphServiceClient, target_user_upn: str | None = None
+    ):
         """Initialize the contact manager.
 
         Args:
@@ -32,7 +33,9 @@ class ContactManager:
         try:
             # Use user-specific endpoint if target_user_upn is provided, otherwise use /me
             if self.target_user_upn:
-                contacts = await self.graph_client.users.by_user_id(self.target_user_upn).contacts.get()
+                contacts = await self.graph_client.users.by_user_id(
+                    self.target_user_upn
+                ).contacts.get()
             else:
                 contacts = await self.graph_client.me.contacts.get()
 

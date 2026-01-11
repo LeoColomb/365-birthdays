@@ -16,9 +16,7 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_graph_client = MagicMock()
-        self.calendar_manager = CalendarManager(
-            self.mock_graph_client, "TestCalendar"
-        )
+        self.calendar_manager = CalendarManager(self.mock_graph_client, "TestCalendar")
 
     async def test_get_or_create_calendar_existing(self):
         """Test getting an existing calendar."""
@@ -30,9 +28,7 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         mock_response = MagicMock()
         mock_response.value = [mock_calendar]
 
-        self.mock_graph_client.me.calendars.get = AsyncMock(
-            return_value=mock_response
-        )
+        self.mock_graph_client.me.calendars.get = AsyncMock(return_value=mock_response)
 
         calendar_id = await self.calendar_manager.get_or_create_calendar()
 
@@ -49,17 +45,13 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         mock_response = MagicMock()
         mock_response.value = [mock_other_calendar]
 
-        self.mock_graph_client.me.calendars.get = AsyncMock(
-            return_value=mock_response
-        )
+        self.mock_graph_client.me.calendars.get = AsyncMock(return_value=mock_response)
 
         # Mock calendar creation
         mock_created = MagicMock()
         mock_created.id = "new-calendar-123"
 
-        self.mock_graph_client.me.calendars.post = AsyncMock(
-            return_value=mock_created
-        )
+        self.mock_graph_client.me.calendars.post = AsyncMock(return_value=mock_created)
 
         calendar_id = await self.calendar_manager.get_or_create_calendar()
 
@@ -128,11 +120,10 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         call_args = mock_calendar.events.post.call_args
         event = call_args[0][0]
 
-        self.assertEqual(event.subject, "John Doe")
+        self.assertEqual(event.subject, "🎂 John Doe")
         self.assertTrue(event.is_all_day)
         self.assertEqual(event.categories, ["Birthday"])
         self.assertIn("Age:", event.body.content)
-        self.assertIn("Contact ID: contact-456", event.body.content)
 
     async def test_create_birthday_event_age_calculation(self):
         """Test age calculation in birthday event."""

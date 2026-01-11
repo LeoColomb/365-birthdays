@@ -23,9 +23,10 @@ def test_graph_authenticator_get_client_device_code():
     """Test get_client method with device code flow."""
     config = Config(client_id="test_client", tenant_id="test_tenant")
 
-    with patch("birthdays365.auth.DeviceCodeCredential") as mock_credential, \
-         patch("birthdays365.auth.GraphServiceClient") as mock_graph:
-
+    with (
+        patch("birthdays365.auth.DeviceCodeCredential") as mock_credential,
+        patch("birthdays365.auth.GraphServiceClient") as mock_graph,
+    ):
         authenticator = GraphAuthenticator(config)
         client = authenticator.get_client()
 
@@ -43,14 +44,13 @@ def test_graph_authenticator_get_client_device_code():
 def test_graph_authenticator_get_client_client_secret():
     """Test get_client method with client secret flow."""
     config = Config(
-        client_id="test_client",
-        tenant_id="test_tenant",
-        client_secret="test_secret"
+        client_id="test_client", tenant_id="test_tenant", client_secret="test_secret"
     )
 
-    with patch("birthdays365.auth.ClientSecretCredential") as mock_credential, \
-         patch("birthdays365.auth.GraphServiceClient") as mock_graph:
-
+    with (
+        patch("birthdays365.auth.ClientSecretCredential") as mock_credential,
+        patch("birthdays365.auth.GraphServiceClient") as mock_graph,
+    ):
         authenticator = GraphAuthenticator(config)
         client = authenticator.get_client()
 

@@ -30,10 +30,12 @@ This Python package uses the Microsoft Graph API to:
 2. Navigate to **Applications** > **App registrations**
 3. Click **New registration**
 4. Configure your app:
-  - **Name**: 365 Birthdays Sync
-  - **Supported account types**: Accounts in this organizational directory
-    only (Single tenant)
-  - **Redirect URI**: Leave empty for now
+
+- **Name**: 365 Birthdays Sync
+- **Supported account types**: Accounts in this organizational directory
+  only (Single tenant)
+- **Redirect URI**: Leave empty for now
+
 5. Click **Register**
 
 ### 2. Configure API Permissions
@@ -44,9 +46,11 @@ This Python package uses the Microsoft Graph API to:
 2. Click **Add a permission**
 3. Select **Microsoft Graph** > **Delegated permissions**
 4. Add the following permissions:
-  - `Calendars.ReadWrite` - Create and manage calendar events
-  - `Contacts.Read` - Read user contacts
-  - `User.Read` - Sign in and read user profile
+
+- `Calendars.ReadWrite` - Create and manage calendar events
+- `Contacts.Read` - Read user contacts
+- `User.Read` - Sign in and read user profile
+
 5. Click **Add permissions**
 6. Click **Grant admin consent** (requires admin privileges)
 
@@ -58,8 +62,10 @@ For scenarios like GitHub Actions or scheduled scripts, you'll need **Applicatio
 2. Click **Add a permission**
 3. Select **Microsoft Graph** > **Application permissions**
 4. Add the following permissions:
-  - `Calendars.ReadWrite` - Create and manage calendar events for all users
-  - `Contacts.Read` - Read contacts in all mailboxes
+
+- `Calendars.ReadWrite` - Create and manage calendar events for all users
+- `Contacts.Read` - Read contacts in all mailboxes
+
 5. Click **Add permissions**
 6. Click **Grant admin consent** (requires admin privileges)
 
@@ -91,6 +97,7 @@ For automated scenarios like GitHub Actions:
 7. Save this value as `CLIENT_SECRET` in your environment variables
 
 **Choosing the Right Method:**
+
 - **Device Code Flow**: Use for local development or manual runs. Requires user interaction.
 - **Client Secret Flow**: Use for CI/CD pipelines, scheduled tasks, or any non-interactive automation.
 
@@ -118,17 +125,18 @@ When using client credentials (client secret) with **Application permissions**, 
 
 1. Copy the example environment file:
 
-  ```bash
-  cp .env.example .env
-  ```
+```bash
+cp .env.example .env
+```
 
 2. Edit `.env` and fill in your values:
-  - `CLIENT_ID`: Application (client) ID from your app registration
-  - `TENANT_ID`: Directory (tenant) ID from your app registration
-  - `CLIENT_SECRET`: (Optional) Client secret for non-interactive authentication. If not provided, device code flow will be used.
-  - `TARGET_USER_UPN`: (Optional, but **required** when using CLIENT_SECRET with Application permissions) User's email address (e.g., user@company.com) to specify whose contacts and calendar to sync
-  - `CALENDAR_NAME`: (Optional) Name of the calendar to create/use
-    (default: "Birthdays")
+
+- `CLIENT_ID`: Application (client) ID from your app registration
+- `TENANT_ID`: Directory (tenant) ID from your app registration
+- `CLIENT_SECRET`: (Optional) Client secret for non-interactive authentication. If not provided, device code flow will be used.
+- `TARGET_USER_UPN`: (Optional, but **required** when using CLIENT_SECRET with Application permissions) User's email address (e.g., user@company.com) to specify whose contacts and calendar to sync
+- `CALENDAR_NAME`: (Optional) Name of the calendar to create/use
+  (default: "Birthdays")
 
 ### 5. Install the Package
 
@@ -334,9 +342,9 @@ To enable error tracking with Sentry:
 2. Get your DSN from the project settings
 3. Add it to your `.env` file:
 
-  ```bash
-  SENTRY_DSN=https://your-sentry-dsn-here
-  ```
+```bash
+SENTRY_DSN=https://your-sentry-dsn-here
+```
 
 When configured, all exceptions and errors will be automatically reported
 to Sentry.
@@ -358,26 +366,28 @@ The 365 Birthdays app integrates with your Microsoft 365 tenant to:
 This application requires the following:
 
 1. **Microsoft 365 Account**: A valid Microsoft 365 (formerly Office 365)
-  account with access to:
-  - Outlook/Exchange Online for calendar functionality
-  - Microsoft Graph API access
+   account with access to:
+
+- Outlook/Exchange Online for calendar functionality
+- Microsoft Graph API access
 
 2. **Microsoft Entra App Registration**: An app registered in Microsoft
-  Entra (Azure AD) with:
-  - **Application Type**: 
-    - Public client application (for device code flow)
-    - Or confidential client (for client secret flow)
-  - **Redirect URI**: Not required for either flow
-  - **API Permissions**:
-    - For interactive use (Delegated permissions):
-      - `Calendars.ReadWrite` (Delegated)
-      - `Contacts.Read` (Delegated)
-      - `User.Read` (Delegated)
-    - For automated use (Application permissions):
-      - `Calendars.ReadWrite` (Application)
-      - `Contacts.Read` (Application)
-  - **Admin Consent**: Granted for all permissions
-  - **Client Secret**: Required only for non-interactive authentication
+   Entra (Azure AD) with:
+
+- **Application Type**:
+  - Public client application (for device code flow)
+  - Or confidential client (for client secret flow)
+- **Redirect URI**: Not required for either flow
+- **API Permissions**:
+  - For interactive use (Delegated permissions):
+    - `Calendars.ReadWrite` (Delegated)
+    - `Contacts.Read` (Delegated)
+    - `User.Read` (Delegated)
+  - For automated use (Application permissions):
+    - `Calendars.ReadWrite` (Application)
+    - `Contacts.Read` (Application)
+- **Admin Consent**: Granted for all permissions
+- **Client Secret**: Required only for non-interactive authentication
 
 3. **Public Client Flow**: Enabled in the app registration to support
    device code authentication
@@ -385,6 +395,7 @@ This application requires the following:
 ### How It Works
 
 **Device Code Flow (Interactive):**
+
 1. **Authentication**: You'll authenticate via browser using a device code
 2. **User Context**: Runs as the authenticated user
 3. **Data Reading**: Reads contacts from your Microsoft 365 account via Graph API
@@ -393,6 +404,7 @@ This application requires the following:
 6. **Smart Updates**: Detects when contact birthdays change and updates events accordingly
 
 **Client Secret Flow (Non-Interactive):**
+
 1. **Authentication**: Authenticates using client ID, tenant ID, and client secret
 2. **User Context**: Runs with application permissions (can access any user's data)
 3. **Data Access**: Same as above, but requires specifying target user for full automation
@@ -418,7 +430,7 @@ This application requires the following:
 
 - **Device Code Flow**: Provides secure, interactive authentication without storing secrets
 - **Client Secret Flow**: Requires careful secret management - never commit secrets to version control
-- **Client Secret Storage**: 
+- **Client Secret Storage**:
   - For local use: Store in `.env` file (gitignored)
   - For GitHub Actions: Use encrypted repository secrets
   - Rotate secrets regularly
@@ -433,12 +445,14 @@ This application requires the following:
 ### Authentication Errors
 
 **Device Code Flow:**
+
 1. Verify your `CLIENT_ID` and `TENANT_ID` are correct
 2. Ensure admin consent was granted for the Delegated API permissions
 3. Check that public client flows are enabled in your app registration
 4. Make sure you complete the device code authentication flow in the browser
 
 **Client Secret Flow:**
+
 1. Verify `CLIENT_ID`, `TENANT_ID`, and `CLIENT_SECRET` are all correct
 2. Check that the client secret hasn't expired
 3. Ensure admin consent was granted for the Application API permissions

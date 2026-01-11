@@ -26,14 +26,9 @@ class BirthdaySync:
         self.authenticator = GraphAuthenticator(config)
         self.graph_client = self.authenticator.get_client()
         self.calendar_manager = CalendarManager(
-            self.graph_client,
-            config.calendar_name,
-            config.target_user_upn
+            self.graph_client, config.calendar_name, config.target_user_upn
         )
-        self.contact_manager = ContactManager(
-            self.graph_client,
-            config.target_user_upn
-        )
+        self.contact_manager = ContactManager(self.graph_client, config.target_user_upn)
 
     async def sync(self) -> None:
         """Execute the birthday synchronization process."""
@@ -98,7 +93,11 @@ class BirthdaySync:
                 if needs_update:
                     # Update the existing event
                     if await self.calendar_manager.update_birthday_event(
-                        calendar_id, event_info["id"], contact_name, birthday, contact_id
+                        calendar_id,
+                        event_info["id"],
+                        contact_name,
+                        birthday,
+                        contact_id,
                     ):
                         updated_count += 1
                         print("↻ Updated event")

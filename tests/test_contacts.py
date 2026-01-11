@@ -40,9 +40,7 @@ class TestContactManager(unittest.IsolatedAsyncioTestCase):
         mock_response = MagicMock()
         mock_response.value = [mock_contact1, mock_contact2, mock_contact3]
 
-        self.mock_graph_client.me.contacts.get = AsyncMock(
-            return_value=mock_response
-        )
+        self.mock_graph_client.me.contacts.get = AsyncMock(return_value=mock_response)
 
         contacts = await self.contact_manager.get_contacts_with_birthdays()
 
@@ -57,9 +55,7 @@ class TestContactManager(unittest.IsolatedAsyncioTestCase):
         mock_response = MagicMock()
         mock_response.value = []
 
-        self.mock_graph_client.me.contacts.get = AsyncMock(
-            return_value=mock_response
-        )
+        self.mock_graph_client.me.contacts.get = AsyncMock(return_value=mock_response)
 
         contacts = await self.contact_manager.get_contacts_with_birthdays()
 

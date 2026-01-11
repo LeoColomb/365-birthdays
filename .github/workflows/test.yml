@@ -8,16 +8,16 @@ on:
     branches-ignore:
       - main
     paths:
-      - '**.py'
-      - 'pyproject.toml'
-      - '.github/workflows/test.yml'
+      - "**.py"
+      - "pyproject.toml"
+      - ".github/workflows/test.yml"
   pull_request:
     branches:
       - main
     paths:
-      - '**.py'
-      - 'pyproject.toml'
-      - '.github/workflows/test.yml'
+      - "**.py"
+      - "pyproject.toml"
+      - ".github/workflows/test.yml"
 
 permissions:
   contents: read
