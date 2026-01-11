@@ -67,6 +67,14 @@ class CalendarManager:
             # Create new birthday calendar
             new_calendar = Calendar()
             new_calendar.name = self.calendar_name
+            new_calendar.can_edit = False
+            new_calendar.is_removable = False
+            new_calendar.is_tallying_responses = False
+
+            icon_property = SingleValueLegacyExtendedProperty()
+            icon_property.id = "Integer {11000E07-B51B-40D6-AF21-CAA85EDAB1D0} Id 0x0027"
+            icon_property.value = "Cake"
+            new_calendar.single_value_extended_properties = [icon_property]
 
             if self.target_user_upn:
                 created_calendar = await self.graph_client.users.by_user_id(
@@ -158,7 +166,6 @@ class CalendarManager:
         event = Event()
         event.subject = contact_name
         event.is_all_day = True
-        event.categories = ["Birthday"]
         event.show_as = FreeBusyStatus.Free
 
         # Add extended property for birthday icon (cake icon)
@@ -179,12 +186,6 @@ class CalendarManager:
         end.date_time = end_date.isoformat()
         end.time_zone = "UTC"
         event.end = end
-
-        # Add description with age
-        body = ItemBody()
-        body.content_type = BodyType.Text
-        body.content = f"Age: {age}"
-        event.body = body
 
         # Add reminder at event start
         event.is_reminder_on = True
