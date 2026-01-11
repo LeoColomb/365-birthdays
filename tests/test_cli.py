@@ -26,17 +26,16 @@ def test_main_with_sentry_initialization():
     mock_config = Mock()
     mock_config.sentry_dsn = "https://test@sentry.io/123"
 
-    with patch("birthdays365.cli.Config.from_env", return_value=mock_config), \
-         patch("birthdays365.cli.sentry_sdk.init") as mock_sentry_init, \
-         patch("birthdays365.cli.BirthdaySync"), \
-         patch("birthdays365.cli.asyncio.run"):
-
+    with (
+        patch("birthdays365.cli.Config.from_env", return_value=mock_config),
+        patch("birthdays365.cli.sentry_sdk.init") as mock_sentry_init,
+        patch("birthdays365.cli.BirthdaySync"),
+        patch("birthdays365.cli.asyncio.run"),
+    ):
         main()
 
         # Verify Sentry was initialized with the DSN
-        mock_sentry_init.assert_called_once_with(
-            dsn="https://test@sentry.io/123"
-        )
+        mock_sentry_init.assert_called_once_with(dsn="https://test@sentry.io/123")
 
 
 def test_main_without_sentry():
@@ -44,11 +43,12 @@ def test_main_without_sentry():
     mock_config = Mock()
     mock_config.sentry_dsn = None
 
-    with patch("birthdays365.cli.Config.from_env", return_value=mock_config), \
-         patch("birthdays365.cli.sentry_sdk.init") as mock_sentry_init, \
-         patch("birthdays365.cli.BirthdaySync"), \
-         patch("birthdays365.cli.asyncio.run"):
-
+    with (
+        patch("birthdays365.cli.Config.from_env", return_value=mock_config),
+        patch("birthdays365.cli.sentry_sdk.init") as mock_sentry_init,
+        patch("birthdays365.cli.BirthdaySync"),
+        patch("birthdays365.cli.asyncio.run"),
+    ):
         main()
 
         # Verify Sentry was not initialized
@@ -60,12 +60,13 @@ def test_main_exception_captured_in_sentry():
     mock_config = Mock()
     mock_config.sentry_dsn = "https://test@sentry.io/123"
 
-    with patch("birthdays365.cli.Config.from_env", return_value=mock_config), \
-         patch("birthdays365.cli.sentry_sdk.init"), \
-         patch("birthdays365.cli.sentry_sdk.capture_exception") as mock_capture, \
-         patch("birthdays365.cli.BirthdaySync"), \
-         patch("birthdays365.cli.asyncio.run") as mock_run:
-
+    with (
+        patch("birthdays365.cli.Config.from_env", return_value=mock_config),
+        patch("birthdays365.cli.sentry_sdk.init"),
+        patch("birthdays365.cli.sentry_sdk.capture_exception") as mock_capture,
+        patch("birthdays365.cli.BirthdaySync"),
+        patch("birthdays365.cli.asyncio.run") as mock_run,
+    ):
         # Make asyncio.run raise an exception
         test_exception = RuntimeError("Test error")
         mock_run.side_effect = test_exception

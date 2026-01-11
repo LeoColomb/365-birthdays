@@ -3,7 +3,6 @@
 
 """Contact operations for Microsoft Graph API."""
 
-
 import sentry_sdk
 from msgraph import GraphServiceClient
 
@@ -11,7 +10,9 @@ from msgraph import GraphServiceClient
 class ContactManager:
     """Manages contact operations via Microsoft Graph API."""
 
-    def __init__(self, graph_client: GraphServiceClient, target_user_upn: str | None = None):
+    def __init__(
+        self, graph_client: GraphServiceClient, target_user_upn: str | None = None
+    ):
         """Initialize the contact manager.
 
         Args:
@@ -32,20 +33,41 @@ class ContactManager:
         try:
             # Use user-specific endpoint if target_user_upn is provided, otherwise use /me
             if self.target_user_upn:
-                contacts = await self.graph_client.users.by_user_id(self.target_user_upn).contacts.get()
+                request_builder = self.graph_client.users.by_user_id(
+                    self.target_user_upn
+                ).contacts
             else:
-                contacts = await self.graph_client.me.contacts.get()
+                request_builder = self.graph_client.me.contacts
 
-            if contacts and contacts.value:
-                for contact in contacts.value:
-                    if contact.birthday:
-                        contacts_with_birthdays.append(
-                            {
-                                "id": contact.id,
-                                "name": contact.display_name,
-                                "birthday": contact.birthday,
-                            }
+            # Fetch all pages of contacts
+            contacts_response = await request_builder.get()
+
+            while contacts_response:
+                if contacts_response.value:
+                    for contact in contacts_response.value:
+                        if contact.birthday:
+                            contacts_with_birthdays.append(
+                                {
+                                    "id": contact.id,
+                                    "name": contact.display_name,
+                                    "birthday": contact.birthday,
+                                }
+                            )
+
+                # Check if there's a next page
+                if contacts_response.odata_next_link:
+                    # Try to get next page using with_url if available
+                    try:
+                        request_builder = request_builder.with_url(
+                            contacts_response.odata_next_link
                         )
+                        contacts_response = await request_builder.get()
+                    except (AttributeError, TypeError):
+                        # If with_url is not available, stop pagination
+                        break
+                else:
+                    # No more pages
+                    break
 
         except Exception as e:
             sentry_sdk.capture_exception(e)

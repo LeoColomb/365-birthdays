@@ -16,9 +16,7 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.mock_graph_client = MagicMock()
-        self.calendar_manager = CalendarManager(
-            self.mock_graph_client, "TestCalendar"
-        )
+        self.calendar_manager = CalendarManager(self.mock_graph_client, "TestCalendar")
 
     async def test_get_or_create_calendar_existing(self):
         """Test getting an existing calendar."""
@@ -30,9 +28,7 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         mock_response = MagicMock()
         mock_response.value = [mock_calendar]
 
-        self.mock_graph_client.me.calendars.get = AsyncMock(
-            return_value=mock_response
-        )
+        self.mock_graph_client.me.calendars.get = AsyncMock(return_value=mock_response)
 
         calendar_id = await self.calendar_manager.get_or_create_calendar()
 
@@ -49,17 +45,13 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         mock_response = MagicMock()
         mock_response.value = [mock_other_calendar]
 
-        self.mock_graph_client.me.calendars.get = AsyncMock(
-            return_value=mock_response
-        )
+        self.mock_graph_client.me.calendars.get = AsyncMock(return_value=mock_response)
 
         # Mock calendar creation
         mock_created = MagicMock()
         mock_created.id = "new-calendar-123"
 
-        self.mock_graph_client.me.calendars.post = AsyncMock(
-            return_value=mock_created
-        )
+        self.mock_graph_client.me.calendars.post = AsyncMock(return_value=mock_created)
 
         calendar_id = await self.calendar_manager.get_or_create_calendar()
 
@@ -132,7 +124,11 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(event.is_all_day)
         self.assertEqual(event.categories, ["Birthday"])
         self.assertIn("Age:", event.body.content)
-        self.assertIn("Contact ID: contact-456", event.body.content)
+        # Verify extended property for birthday icon is set
+        self.assertIsNotNone(event.single_value_extended_properties)
+        self.assertEqual(len(event.single_value_extended_properties), 1)
+        self.assertEqual(event.single_value_extended_properties[0].id, "Integer 0x8214")
+        self.assertEqual(event.single_value_extended_properties[0].value, "5")
 
     async def test_create_birthday_event_age_calculation(self):
         """Test age calculation in birthday event."""
