@@ -205,7 +205,7 @@ class CalendarManager:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            print(f"Error creating birthday event for {contact_name}: {e}")
+            print("Error creating birthday event")
             return False
 
     async def update_birthday_event(
@@ -298,5 +298,5 @@ class CalendarManager:
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
-            print(f"Error updating birthday event for {contact_name}: {e}")
+            print("Error updating birthday event")
             return False
