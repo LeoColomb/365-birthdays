@@ -55,9 +55,8 @@ class ContactManager:
                             )
 
                 # Check if there's a next page
-                if (
-                    contacts_response.odata_next_link
-                    and hasattr(request_builder, "with_url")
+                if contacts_response.odata_next_link and hasattr(
+                    request_builder, "with_url"
                 ):
                     # Get next page
                     request_builder = request_builder.with_url(

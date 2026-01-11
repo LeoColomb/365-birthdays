@@ -39,6 +39,7 @@ class TestContactManager(unittest.IsolatedAsyncioTestCase):
 
         mock_response = MagicMock()
         mock_response.value = [mock_contact1, mock_contact2, mock_contact3]
+        mock_response.odata_next_link = None  # No pagination
 
         self.mock_graph_client.me.contacts.get = AsyncMock(return_value=mock_response)
 
@@ -54,6 +55,7 @@ class TestContactManager(unittest.IsolatedAsyncioTestCase):
         """Test retrieving contacts when none have birthdays."""
         mock_response = MagicMock()
         mock_response.value = []
+        mock_response.odata_next_link = None
 
         self.mock_graph_client.me.contacts.get = AsyncMock(return_value=mock_response)
 
@@ -71,6 +73,50 @@ class TestContactManager(unittest.IsolatedAsyncioTestCase):
 
         # Should return empty list on error
         self.assertEqual(len(contacts), 0)
+
+    async def test_get_contacts_with_birthdays_pagination(self):
+        """Test retrieving contacts with pagination."""
+        # First page of contacts
+        mock_contact1 = MagicMock()
+        mock_contact1.id = "contact-1"
+        mock_contact1.display_name = "John Doe"
+        mock_contact1.birthday = datetime(1990, 5, 15, tzinfo=timezone.utc)
+
+        # Second page of contacts
+        mock_contact2 = MagicMock()
+        mock_contact2.id = "contact-2"
+        mock_contact2.display_name = "Jane Smith"
+        mock_contact2.birthday = datetime(1985, 8, 20, tzinfo=timezone.utc)
+
+        # First response with next link
+        mock_response1 = MagicMock()
+        mock_response1.value = [mock_contact1]
+        mock_response1.odata_next_link = (
+            "https://graph.microsoft.com/v1.0/me/contacts?$skip=10"
+        )
+
+        # Second response without next link
+        mock_response2 = MagicMock()
+        mock_response2.value = [mock_contact2]
+        mock_response2.odata_next_link = None
+
+        # Mock the contacts request builder to support pagination
+        mock_contacts_builder = MagicMock()
+        mock_contacts_builder.get = AsyncMock(
+            side_effect=[mock_response1, mock_response2]
+        )
+        mock_contacts_builder.with_url = MagicMock(return_value=mock_contacts_builder)
+
+        self.mock_graph_client.me.contacts = mock_contacts_builder
+
+        contacts = await self.contact_manager.get_contacts_with_birthdays()
+
+        # Should have both contacts from both pages
+        self.assertEqual(len(contacts), 2)
+        self.assertEqual(contacts[0]["id"], "contact-1")
+        self.assertEqual(contacts[0]["name"], "John Doe")
+        self.assertEqual(contacts[1]["id"], "contact-2")
+        self.assertEqual(contacts[1]["name"], "Jane Smith")
 
 
 if __name__ == "__main__":
