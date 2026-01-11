@@ -17,6 +17,9 @@ from msgraph.generated.models.recurrence_pattern import RecurrencePattern
 from msgraph.generated.models.recurrence_pattern_type import RecurrencePatternType
 from msgraph.generated.models.recurrence_range import RecurrenceRange
 from msgraph.generated.models.recurrence_range_type import RecurrenceRangeType
+from msgraph.generated.models.single_value_legacy_extended_property import (
+    SingleValueLegacyExtendedProperty,
+)
 
 
 class CalendarManager:
@@ -108,12 +111,8 @@ class CalendarManager:
                 for event in events.value:
                     # Check if this is a birthday event by checking categories
                     if event.categories and "Birthday" in event.categories:
-                        # Remove emoji from subject to get just the contact name
-                        # Handle both new format (with emoji) and old format (without)
-                        contact_name = event.subject
-                        if contact_name.startswith("🎂 "):
-                            contact_name = contact_name[3:]  # Remove "🎂 " prefix
-                        existing_events[contact_name] = {
+                        # Subject is the contact name
+                        existing_events[event.subject] = {
                             "id": event.id,
                             "start": (event.start.date_time if event.start else None),
                         }
@@ -156,9 +155,17 @@ class CalendarManager:
 
         # Create event object
         event = Event()
-        event.subject = f"🎂 {contact_name}"
+        event.subject = contact_name
         event.is_all_day = True
         event.categories = ["Birthday"]
+
+        # Add extended property for birthday icon (cake icon)
+        # Using MAPI property for icon index
+        # PidLidAppointmentColor = 0x00008214 (Birthday icon)
+        icon_property = SingleValueLegacyExtendedProperty()
+        icon_property.id = "Integer 0x8214"
+        icon_property.value = "5"  # Birthday icon value
+        event.single_value_extended_properties = [icon_property]
 
         # Set start and end dates
         start = DateTimeTimeZone()

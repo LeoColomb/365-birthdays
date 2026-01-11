@@ -120,10 +120,15 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         call_args = mock_calendar.events.post.call_args
         event = call_args[0][0]
 
-        self.assertEqual(event.subject, "🎂 John Doe")
+        self.assertEqual(event.subject, "John Doe")
         self.assertTrue(event.is_all_day)
         self.assertEqual(event.categories, ["Birthday"])
         self.assertIn("Age:", event.body.content)
+        # Verify extended property for birthday icon is set
+        self.assertIsNotNone(event.single_value_extended_properties)
+        self.assertEqual(len(event.single_value_extended_properties), 1)
+        self.assertEqual(event.single_value_extended_properties[0].id, "Integer 0x8214")
+        self.assertEqual(event.single_value_extended_properties[0].value, "5")
 
     async def test_create_birthday_event_age_calculation(self):
         """Test age calculation in birthday event."""
