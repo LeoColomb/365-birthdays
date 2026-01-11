@@ -164,15 +164,15 @@ class CalendarManager:
             end.time_zone = "UTC"
             event.end = end
 
-            # Add description with age and contact ID
+            # Add description with age
             body = ItemBody()
             body.content_type = BodyType.Text
-            body.content = f"Age: {age}\nContact ID: {contact_id}"
+            body.content = f"Age: {age}"
             event.body = body
 
             # Add reminder at event start
             event.is_reminder_on = True
-            event.reminder_minutes_before_start = 0  # Reminder at event start
+            event.reminder_minutes_before_start = - 60 * 12  # Reminder at event start
 
             # Add yearly recurrence pattern
             pattern = RecurrencePattern()
@@ -257,6 +257,10 @@ class CalendarManager:
             event.end.date_time = end_date.isoformat()
             event.end.time_zone = "UTC"
 
+            # Add reminder at event start
+            event.is_reminder_on = True
+            event.reminder_minutes_before_start = - 60 * 12  # Reminder at event start
+
             # Update recurrence pattern
             pattern = RecurrencePattern()
             pattern.type = RecurrencePatternType.AbsoluteYearly
@@ -274,10 +278,10 @@ class CalendarManager:
 
             event.recurrence = recurrence
 
-            # Update description with age and contact ID
+            # Update description with age
             body = ItemBody()
             body.content_type = BodyType.Text
-            body.content = f"Age: {age}\nContact ID: {contact_id}"
+            body.content = f"Age: {age}"
             event.body = body
 
             # Update the event
