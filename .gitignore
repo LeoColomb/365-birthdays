@@ -29,6 +29,9 @@ wheels/
 .venv/
 uv.lock
 
+# Node
+node_modules/
+
 # Environment variables
 .env
 .env.local
