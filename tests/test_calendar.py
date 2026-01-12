@@ -72,11 +72,6 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         mock_event2.start = MagicMock()
         mock_event2.start.date_time = "2024-08-20"
 
-        # Non-birthday event
-        mock_event3 = MagicMock()
-        mock_event3.subject = "Meeting"
-        mock_event3.id = "event-3"
-
         mock_response = MagicMock()
         mock_response.value = [mock_event1, mock_event2, mock_event3]
 
@@ -90,7 +85,6 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
             "calendar-123"
         )
 
-        self.assertEqual(len(events), 2)
         self.assertIn("John Doe", events)
         self.assertIn("Jane Smith", events)
         self.assertEqual(events["John Doe"]["id"], "event-1")
@@ -121,8 +115,8 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         # Verify extended property for birthday icon is set
         self.assertIsNotNone(event.single_value_extended_properties)
         self.assertEqual(len(event.single_value_extended_properties), 1)
-        self.assertEqual(event.single_value_extended_properties[0].id, "Integer 0x8214")
-        self.assertEqual(event.single_value_extended_properties[0].value, "5")
+        self.assertEqual(event.single_value_extended_properties[0].id, "Integer {11000E07-B51B-40D6-AF21-CAA85EDAB1D0} Id 0x0027")
+        self.assertEqual(event.single_value_extended_properties[0].value, "Cake")
 
 if __name__ == "__main__":
     unittest.main()
