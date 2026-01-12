@@ -9,7 +9,7 @@ requires-python = ">=3.10"
 dependencies = [
     "msgraph-sdk==1.5.4",
     "azure-identity==1.25.1",
-    "python-dotenv==1.0.1",
+    "python-dotenv==1.2.1",
     "sentry-sdk>=2.49.0",
 ]
 license = { text = "MIT" }
