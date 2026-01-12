@@ -60,17 +60,14 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
 
     async def test_get_existing_birthday_events(self):
         """Test retrieving existing birthday events."""
-        # Mock events with birthday category
         mock_event1 = MagicMock()
         mock_event1.subject = "John Doe"
-        mock_event1.categories = ["Birthday"]
         mock_event1.id = "event-1"
         mock_event1.start = MagicMock()
         mock_event1.start.date_time = "2024-05-15"
 
         mock_event2 = MagicMock()
         mock_event2.subject = "Jane Smith"
-        mock_event2.categories = ["Birthday"]
         mock_event2.id = "event-2"
         mock_event2.start = MagicMock()
         mock_event2.start.date_time = "2024-08-20"
@@ -78,7 +75,6 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         # Non-birthday event
         mock_event3 = MagicMock()
         mock_event3.subject = "Meeting"
-        mock_event3.categories = ["Work"]
         mock_event3.id = "event-3"
 
         mock_response = MagicMock()
@@ -122,40 +118,11 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(event.subject, "John Doe")
         self.assertTrue(event.is_all_day)
-        self.assertEqual(event.categories, ["Birthday"])
-        self.assertIn("Age:", event.body.content)
         # Verify extended property for birthday icon is set
         self.assertIsNotNone(event.single_value_extended_properties)
         self.assertEqual(len(event.single_value_extended_properties), 1)
         self.assertEqual(event.single_value_extended_properties[0].id, "Integer 0x8214")
         self.assertEqual(event.single_value_extended_properties[0].value, "5")
-
-    async def test_create_birthday_event_age_calculation(self):
-        """Test age calculation in birthday event."""
-        mock_calendar = MagicMock()
-        mock_calendar.events.post = AsyncMock(return_value=MagicMock())
-        self.mock_graph_client.me.calendars.by_calendar_id = MagicMock(
-            return_value=mock_calendar
-        )
-
-        # Test with a birthday that already happened this year
-        current_year = datetime.now(timezone.utc).year
-        birthday = datetime(1990, 1, 1, tzinfo=timezone.utc)
-
-        result = await self.calendar_manager.create_birthday_event(
-            "calendar-123", "Test Person", birthday, "contact-123"
-        )
-
-        self.assertTrue(result)
-
-        # Verify age in description
-        call_args = mock_calendar.events.post.call_args
-        event = call_args[0][0]
-
-        # Age should be calculated for next year since birthday already passed
-        expected_age = (current_year + 1) - 1990
-        self.assertIn(f"Age: {expected_age}", event.body.content)
-
 
 if __name__ == "__main__":
     unittest.main()

@@ -7,12 +7,10 @@ from datetime import datetime, timedelta, timezone
 
 import sentry_sdk
 from msgraph import GraphServiceClient
-from msgraph.generated.models.body_type import BodyType
 from msgraph.generated.models.calendar import Calendar
 from msgraph.generated.models.date_time_time_zone import DateTimeTimeZone
 from msgraph.generated.models.event import Event
 from msgraph.generated.models.free_busy_status import FreeBusyStatus
-from msgraph.generated.models.item_body import ItemBody
 from msgraph.generated.models.patterned_recurrence import PatternedRecurrence
 from msgraph.generated.models.recurrence_pattern import RecurrencePattern
 from msgraph.generated.models.recurrence_pattern_type import RecurrencePatternType
@@ -118,13 +116,11 @@ class CalendarManager:
 
             if events and events.value:
                 for event in events.value:
-                    # Check if this is a birthday event by checking categories
-                    if event.categories and "Birthday" in event.categories:
-                        # Subject is the contact name
-                        existing_events[event.subject] = {
-                            "id": event.id,
-                            "start": (event.start.date_time if event.start else None),
-                        }
+                    # Subject is the contact name
+                    existing_events[event.subject] = {
+                        "id": event.id,
+                        "start": (event.start.date_time if event.start else None),
+                    }
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
@@ -158,9 +154,6 @@ class CalendarManager:
         # If birthday already passed this year, schedule for next year
         if event_date < current_date:
             event_date = birthday_date.replace(year=current_year + 1)
-
-        # Calculate age
-        age = event_date.year - birthday_date.year
 
         # Create event object
         event = Event()
