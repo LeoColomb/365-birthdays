@@ -192,54 +192,6 @@ tests/
 └── test_sync.py     # Synchronization logic tests
 ```
 
-## Authentication Methods Explained
-
-### Device Code Flow (Interactive)
-
-When no `CLIENT_SECRET` is provided, the app uses device code authentication:
-
-1. You run the application
-2. It displays a URL and code
-3. You visit the URL in a browser and enter the code
-4. You authenticate with your Microsoft 365 account
-5. The app runs with **your user context** - it accesses your contacts and calendar
-
-**User Context:** The authenticated user (you)
-
-### Client Secret Flow (Non-Interactive)
-
-When `CLIENT_SECRET` is provided, the app uses client credentials authentication:
-
-1. The app authenticates using CLIENT_ID, TENANT_ID, and CLIENT_SECRET
-2. No user interaction required
-3. The app runs with **application permissions**
-4. It can access any user's data in the organization (subject to permissions)
-
-**User Context Configuration:**
-
-The application now supports targeting specific users via the `TARGET_USER_UPN` environment variable:
-
-- **With `TARGET_USER_UPN` set** (e.g., `TARGET_USER_UPN=john.doe@company.com`):
-  - Uses `/users/{TARGET_USER_UPN}/contacts` and `/users/{TARGET_USER_UPN}/calendars`
-  - Syncs the specified user's birthdays
-  - **Requires Application permissions** in Azure AD
-  - Perfect for fully automated CI/CD scenarios
-
-- **Without `TARGET_USER_UPN`** (legacy/backward compatible):
-  - Uses `/me/contacts` and `/me/calendars`
-  - Works with delegated permissions
-  - May require interactive login depending on permission configuration
-
-**Setup for Full Automation:**
-
-1. Grant **Application permissions** (not Delegated) in Azure AD:
-   - `Calendars.ReadWrite` (Application permission)
-   - `Contacts.Read` (Application permission)
-2. Create a client secret
-3. Set `CLIENT_SECRET` in your environment
-4. Set `TARGET_USER_UPN` to the email address of the user whose birthdays to sync
-5. The app will automatically use the user-specific endpoints
-
 ## Development
 
 ### Running Tests
@@ -272,60 +224,6 @@ uv run ruff check src/ tests/
 uv run ruff format src/ tests/
 ```
 
-### GitHub Actions Workflows
-
-The repository includes automated workflows:
-
-- **Tests** (`.github/workflows/test.yml`): Automatically runs the test
-  suite on every push and pull request
-- **Ruff** (`.github/workflows/ruff.yml`): Runs code quality checks
-- **Birthday Sync** (`.github/workflows/sync.yml`): Automated daily
-  birthday synchronization (requires repository secrets configuration)
-
-To use the Birthday Sync workflow:
-
-1. **Configure Application Permissions** (for automated sync):
-   - In Microsoft Entra, add **Application permissions** (not Delegated):
-     - `Calendars.ReadWrite` (Application)
-     - `Contacts.Read` (Application)
-   - Grant admin consent for these permissions
-   - Create a client secret in **Certificates & secrets**
-
-2. **Add Repository Secrets**:
-   - Go to your repository **Settings** > **Secrets and variables** > **Actions**
-   - Add the following repository secrets:
-     - `CLIENT_ID` - Your Microsoft Entra application (client) ID
-     - `TENANT_ID` - Your Microsoft Entra directory (tenant) ID
-     - `CLIENT_SECRET` - Your client secret value (for non-interactive auth)
-     - `TARGET_USER_UPN` - Email address of the user whose birthdays to sync (e.g., user@company.com)
-     - `CALENDAR_NAME` (optional) - Calendar name (defaults to "Birthdays")
-     - `SENTRY_DSN` (optional) - Sentry DSN for error tracking
-
-3. **Enable the Workflow**:
-   - The workflow is scheduled to run daily at 6:00 AM UTC
-   - You can also manually trigger it using the **Run workflow** button in the GitHub Actions tab
-   - The workflow will automatically sync birthdays for the specified user without any interaction
-
-## Features
-
-- ✅ Interactive device code authentication (for local use)
-- ✅ Client secret authentication (for automation/CI-CD)
-- ✅ Automatic calendar creation
-- ✅ All-day birthday events with yearly recurrence
-- ✅ Reminders enabled for birthday events
-- ✅ Smart event updates when contact birthdays change
-- ✅ Duplicate detection (skip existing events)
-- ✅ Age calculation in event descriptions
-- ✅ Contact ID tracking for easy retrieval
-- ✅ Birthday category assignment using MS Graph API
-- ✅ Configurable calendar name
-- ✅ Sentry integration for error tracking (optional)
-- ✅ Secure credential management via environment variables
-- ✅ Uses official Microsoft Graph SDK for Python
-- ✅ Comprehensive test suite with pytest
-- ✅ Clean OOP architecture with modular design
-- ✅ GitHub Actions workflows for testing and automated syncing
-
 ## Optional: Sentry Integration
 
 To enable error tracking with Sentry:
@@ -342,61 +240,6 @@ When configured, all exceptions and errors will be automatically reported
 to Sentry.
 
 ## Microsoft 365 Integration Guide
-
-### What This App Does
-
-The 365 Birthdays app integrates with your Microsoft 365 tenant to:
-
-- Read contact information from your Microsoft 365 address book
-- Extract birthday dates from contact profiles
-- Create a dedicated "Birthdays" calendar in your Microsoft 365 account
-- Generate recurring calendar events for each birthday
-- Automatically update events if contact birthday information changes
-
-### Required Microsoft 365 Setup
-
-This application requires the following:
-
-1. **Microsoft 365 Account**: A valid Microsoft 365 (formerly Office 365)
-  account with access to:
-  - Outlook/Exchange Online for calendar functionality
-  - Microsoft Graph API access
-
-2. **Microsoft Entra App Registration**: An app registered in Microsoft
-  Entra (Azure AD) with:
-  - **Application Type**: 
-    - Public client application (for device code flow)
-    - Or confidential client (for client secret flow)
-  - **Redirect URI**: Not required for either flow
-  - **API Permissions**:
-    - For interactive use (Delegated permissions):
-      - `Calendars.ReadWrite` (Delegated)
-      - `Contacts.Read` (Delegated)
-      - `User.Read` (Delegated)
-    - For automated use (Application permissions):
-      - `Calendars.ReadWrite` (Application)
-      - `Contacts.Read` (Application)
-  - **Admin Consent**: Granted for all permissions
-  - **Client Secret**: Required only for non-interactive authentication
-
-3. **Public Client Flow**: Enabled in the app registration to support
-   device code authentication
-
-### How It Works
-
-**Device Code Flow (Interactive):**
-1. **Authentication**: You'll authenticate via browser using a device code
-2. **User Context**: Runs as the authenticated user
-3. **Data Reading**: Reads contacts from your Microsoft 365 account via Graph API
-4. **Calendar Management**: Creates/updates events in your dedicated calendar
-5. **Recurrence**: Events repeat annually on the same date
-6. **Smart Updates**: Detects when contact birthdays change and updates events accordingly
-
-**Client Secret Flow (Non-Interactive):**
-1. **Authentication**: Authenticates using client ID, tenant ID, and client secret
-2. **User Context**: Runs with application permissions (can access any user's data)
-3. **Data Access**: Same as above, but requires specifying target user for full automation
-4. **Ideal for**: GitHub Actions, scheduled tasks, CI/CD pipelines
 
 ### Data Privacy
 
@@ -453,15 +296,6 @@ If you get permission-related errors:
 3. Check that the user account has access to contacts and calendars
 
 ## Development
-
-This project uses:
-
-- **Python**: Primary programming language (3.8+)
-- **uv**: Fast Python package manager
-- **ruff**: Fast Python linter and formatter
-- **Microsoft Graph SDK**: For Microsoft 365 API integration
-- **Azure Identity**: For authentication with Microsoft Entra
-- **python-dotenv**: For environment variable management
 
 ### Development Setup
 
