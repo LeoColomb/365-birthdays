@@ -73,7 +73,7 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         mock_event2.start.date_time = "2024-08-20"
 
         mock_response = MagicMock()
-        mock_response.value = [mock_event1, mock_event2, mock_event3]
+        mock_response.value = [mock_event1, mock_event2]
 
         mock_calendar = MagicMock()
         mock_calendar.events.get = AsyncMock(return_value=mock_response)
