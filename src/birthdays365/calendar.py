@@ -148,7 +148,7 @@ class CalendarManager:
             event_date = birthday_date.replace(year=current_year + 1)
 
         # Create event object
-        if !event:
+        if event is None:
             event = Event()
         event.subject = contact_name
         event.is_all_day = True
