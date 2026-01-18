@@ -100,8 +100,6 @@ class CalendarManager:
         Returns:
             List of Event objects
         """
-        events = {}
-
         try:
             if self.target_user_upn:
                 events = (
@@ -121,7 +119,10 @@ class CalendarManager:
         return events
 
     def _prepare_event_data(
-        self, contact_name: str, birthday: datetime, event: Event | None = None
+        self,
+        contact_name: str,
+        birthday: datetime,
+        event: Event | None = None
     ) -> Event:
         """Prepare event data for birthday event creation or update.
 
