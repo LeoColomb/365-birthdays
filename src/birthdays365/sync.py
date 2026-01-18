@@ -58,10 +58,10 @@ class BirthdaySync:
             contact_id = contact.get("id")
 
             # Check if event already exists
-            if contact_name in existing_events:
+            existing_event = next((event for event in existing_events if event.subject == contact_name), None)
+            if existing_event:
                 # Get the existing event info
-                event_info = existing_events[contact_name]
-                existing_date = event_info.get("start")
+                existing_date = existing_event.start.date_time if existing_event.start else None
 
                 # Compare dates (month and day only)
                 if birthday.tzinfo is None:
@@ -94,7 +94,7 @@ class BirthdaySync:
                     # Update the existing event
                     if await self.calendar_manager.update_birthday_event(
                         calendar_id,
-                        event_info["id"],
+                        existing_event,
                         contact_name,
                         birthday,
                         contact_id,

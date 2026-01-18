@@ -91,17 +91,15 @@ class CalendarManager:
 
     async def get_existing_birthday_events(
         self, calendar_id: str
-    ) -> dict[str, dict[str, str]]:
+    ) -> list[Event]:
         """Get existing birthday events to avoid duplicates.
 
         Args:
             calendar_id: ID of the calendar to check
 
         Returns:
-            Dictionary mapping contact names to event info (id and date)
+            List of Event objects
         """
-        existing_events = {}
-
         try:
             if self.target_user_upn:
                 events = (
@@ -114,23 +112,18 @@ class CalendarManager:
                     calendar_id
                 ).events.get()
 
-            if events and events.value:
-                for event in events.value:
-                    # Subject is the contact name
-                    existing_events[event.subject] = {
-                        "id": event.id,
-                        "start": (event.start.date_time if event.start else None),
-                    }
-
         except Exception as e:
             sentry_sdk.capture_exception(e)
             raise Exception(f"Could not check existing events: {e}") from e
 
-        return existing_events
+        return events
 
     def _prepare_event_data(
-        self, contact_name: str, birthday: datetime
-    ) -> tuple[Event, datetime]:
+        self,
+        contact_name: str,
+        birthday: datetime,
+        event: Event | None = None
+    ) -> Event:
         """Prepare event data for birthday event creation or update.
 
         Args:
@@ -138,7 +131,7 @@ class CalendarManager:
             birthday: Birthday date of the contact
 
         Returns:
-            Tuple of (Event object, event_date)
+            Event object
         """
         # Calculate the event date
         current_date = datetime.now(timezone.utc).date()
@@ -156,7 +149,8 @@ class CalendarManager:
             event_date = birthday_date.replace(year=current_year + 1)
 
         # Create event object
-        event = Event()
+        if event is None:
+            event = Event()
         event.subject = contact_name
         event.is_all_day = True
         event.show_as = FreeBusyStatus.Free
@@ -201,7 +195,7 @@ class CalendarManager:
 
         event.recurrence = recurrence
 
-        return event, event_date
+        return event
 
     async def create_birthday_event(
         self,
@@ -222,7 +216,7 @@ class CalendarManager:
             True if event was created successfully, False otherwise
         """
         try:
-            event, _ = self._prepare_event_data(contact_name, birthday)
+            event = self._prepare_event_data(contact_name, birthday)
 
             # Create the event
             if self.target_user_upn:
@@ -246,7 +240,7 @@ class CalendarManager:
     async def update_birthday_event(
         self,
         calendar_id: str,
-        event_id: str,
+        event: Event,
         contact_name: str,
         birthday: datetime,
         contact_id: str,
@@ -255,7 +249,7 @@ class CalendarManager:
 
         Args:
             calendar_id: ID of the calendar
-            event_id: ID of the existing event
+            event: Existing event
             contact_name: Name of the contact
             birthday: Birthday date of the contact
             contact_id: ID of the contact
@@ -264,20 +258,20 @@ class CalendarManager:
             True if event was updated successfully, False otherwise
         """
         try:
-            event, _ = self._prepare_event_data(contact_name, birthday)
+            event = self._prepare_event_data(contact_name, birthday, event)
 
             # Update the event
             if self.target_user_upn:
                 await (
                     self.graph_client.users.by_user_id(self.target_user_upn)
                     .calendars.by_calendar_id(calendar_id)
-                    .events.by_event_id(event_id)
+                    .events.by_event_id(event.id)
                     .patch(event)
                 )
             else:
                 await (
                     self.graph_client.me.calendars.by_calendar_id(calendar_id)
-                    .events.by_event_id(event_id)
+                    .events.by_event_id(event.id)
                     .patch(event)
                 )
 
