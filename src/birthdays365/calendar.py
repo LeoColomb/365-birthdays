@@ -264,13 +264,13 @@ class CalendarManager:
                 await (
                     self.graph_client.users.by_user_id(self.target_user_upn)
                     .calendars.by_calendar_id(calendar_id)
-                    .events.by_event_id(event_id)
+                    .events.by_event_id(event.id)
                     .patch(event)
                 )
             else:
                 await (
                     self.graph_client.me.calendars.by_calendar_id(calendar_id)
-                    .events.by_event_id(event_id)
+                    .events.by_event_id(event.id)
                     .patch(event)
                 )
 
