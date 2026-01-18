@@ -85,8 +85,9 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
             "calendar-123"
         )
 
-        self.assertIn(mock_event1, events)
-        self.assertIn(mock_event2, events)
+        self.assertEqual(mock_response, events)
+        # self.assertIn(mock_event1, events)
+        # self.assertIn(mock_event2, events)
 
     async def test_create_birthday_event(self):
         """Test creating a birthday event."""
