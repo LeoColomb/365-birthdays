@@ -116,7 +116,7 @@ class CalendarManager:
             sentry_sdk.capture_exception(e)
             raise Exception(f"Could not check existing events: {e}") from e
 
-        return events
+        return events.value if (events and events.value) else []
 
     def _prepare_event_data(
         self,
