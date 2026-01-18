@@ -86,15 +86,15 @@ class TestBirthdaySync(unittest.IsolatedAsyncioTestCase):
         mock_auth_class.return_value = mock_auth
 
         # Mock calendar manager with existing events
+        mock_event1 = MagicMock()
+        mock_event1.subject = "John Doe"
+        mock_event1.id = "contact-1"
+        mock_event1.start = MagicMock()
+        mock_event1.start.date_time = "2024-05-15"
         mock_cal_mgr = MagicMock()
         mock_cal_mgr.get_or_create_calendar = AsyncMock(return_value="calendar-123")
         mock_cal_mgr.get_existing_birthday_events = AsyncMock(
-            return_value={
-                "John Doe": {
-                    "id": "event-1",
-                    "start": "2024-06-15",  # Different date
-                }
-            }
+            return_value=[mock_event1]
         )
         mock_cal_mgr.update_birthday_event = AsyncMock(return_value=True)
         mock_cal_mgr_class.return_value = mock_cal_mgr
@@ -133,15 +133,15 @@ class TestBirthdaySync(unittest.IsolatedAsyncioTestCase):
         mock_auth_class.return_value = mock_auth
 
         # Mock calendar manager with existing events
+        mock_event1 = MagicMock()
+        mock_event1.subject = "John Doe"
+        mock_event1.id = "contact-1"
+        mock_event1.start = MagicMock()
+        mock_event1.start.date_time = "2024-05-15"
         mock_cal_mgr = MagicMock()
         mock_cal_mgr.get_or_create_calendar = AsyncMock(return_value="calendar-123")
         mock_cal_mgr.get_existing_birthday_events = AsyncMock(
-            return_value={
-                "John Doe": {
-                    "id": "event-1",
-                    "start": "2024-05-15",  # Same date
-                }
-            }
+            return_value=[mock_event1]
         )
         mock_cal_mgr.update_birthday_event = AsyncMock(return_value=True)
         mock_cal_mgr.create_birthday_event = AsyncMock(return_value=True)
