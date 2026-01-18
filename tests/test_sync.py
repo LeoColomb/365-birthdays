@@ -90,7 +90,7 @@ class TestBirthdaySync(unittest.IsolatedAsyncioTestCase):
         mock_event1.subject = "John Doe"
         mock_event1.id = "contact-1"
         mock_event1.start = MagicMock()
-        mock_event1.start.date_time = "2024-05-15"
+        mock_event1.start.date_time = "2024-06-15" # Different date
         mock_cal_mgr = MagicMock()
         mock_cal_mgr.get_or_create_calendar = AsyncMock(return_value="calendar-123")
         mock_cal_mgr.get_existing_birthday_events = AsyncMock(
