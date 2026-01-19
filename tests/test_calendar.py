@@ -59,7 +59,7 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         self.mock_graph_client.me.calendars.post.assert_called_once()
 
     async def test_get_existing_birthday_events(self):
-        """Test retrieving existing birthday events."""
+        """Test retrieving existing birthday events using calendar_view."""
         mock_event1 = MagicMock()
         mock_event1.subject = "John Doe"
         mock_event1.id = "event-1"
@@ -72,11 +72,17 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
         mock_event2.start = MagicMock()
         mock_event2.start.date_time = "2024-08-20"
 
+        # Mock the first page response
         mock_response = MagicMock()
         mock_response.value = [mock_event1, mock_event2]
+        mock_response.odata_next_link = None  # No pagination for this test
+
+        # Mock the calendar_view
+        mock_calendar_view = MagicMock()
+        mock_calendar_view.get = AsyncMock(return_value=mock_response)
 
         mock_calendar = MagicMock()
-        mock_calendar.events.get = AsyncMock(return_value=mock_response)
+        mock_calendar.calendar_view = mock_calendar_view
         self.mock_graph_client.me.calendars.by_calendar_id = MagicMock(
             return_value=mock_calendar
         )
@@ -85,9 +91,69 @@ class TestCalendarManager(unittest.IsolatedAsyncioTestCase):
             "calendar-123"
         )
 
-        self.assertEqual(mock_response, events)
-        # self.assertIn(mock_event1, events)
-        # self.assertIn(mock_event2, events)
+        self.assertEqual(2, len(events))
+        self.assertIn(mock_event1, events)
+        self.assertIn(mock_event2, events)
+
+    async def test_get_existing_birthday_events_with_pagination(self):
+        """Test retrieving existing birthday events with pagination."""
+        # Create mock events for first page
+        mock_event1 = MagicMock()
+        mock_event1.subject = "John Doe"
+        mock_event1.id = "event-1"
+
+        mock_event2 = MagicMock()
+        mock_event2.subject = "Jane Smith"
+        mock_event2.id = "event-2"
+
+        # Create mock events for second page
+        mock_event3 = MagicMock()
+        mock_event3.subject = "Bob Johnson"
+        mock_event3.id = "event-3"
+
+        # Mock the first page response with next link
+        mock_response_page1 = MagicMock()
+        mock_response_page1.value = [mock_event1, mock_event2]
+        mock_response_page1.odata_next_link = "https://graph.microsoft.com/v1.0/next"
+
+        # Mock the second page response
+        mock_response_page2 = MagicMock()
+        mock_response_page2.value = [mock_event3]
+        mock_response_page2.odata_next_link = None  # No more pages
+
+        # Mock the calendar_view to return different responses
+        mock_calendar_view = MagicMock()
+
+        # First call returns page 1
+        first_call = True
+        async def mock_get(*args, **kwargs):
+            nonlocal first_call
+            if first_call:
+                first_call = False
+                return mock_response_page1
+            return mock_response_page2
+
+        mock_calendar_view.get = AsyncMock(side_effect=mock_get)
+
+        # Mock with_url to return the mock that will give page 2
+        mock_next_page_view = MagicMock()
+        mock_next_page_view.get = AsyncMock(return_value=mock_response_page2)
+        mock_calendar_view.with_url = MagicMock(return_value=mock_next_page_view)
+
+        mock_calendar = MagicMock()
+        mock_calendar.calendar_view = mock_calendar_view
+        self.mock_graph_client.me.calendars.by_calendar_id = MagicMock(
+            return_value=mock_calendar
+        )
+
+        events = await self.calendar_manager.get_existing_birthday_events(
+            "calendar-123"
+        )
+
+        self.assertEqual(3, len(events))
+        self.assertIn(mock_event1, events)
+        self.assertIn(mock_event2, events)
+        self.assertIn(mock_event3, events)
 
     async def test_create_birthday_event(self):
         """Test creating a birthday event."""

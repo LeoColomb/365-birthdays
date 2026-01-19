@@ -19,6 +19,9 @@ from msgraph.generated.models.recurrence_range_type import RecurrenceRangeType
 from msgraph.generated.models.single_value_legacy_extended_property import (
     SingleValueLegacyExtendedProperty,
 )
+from msgraph.generated.users.item.calendars.item.calendar_view.calendar_view_request_builder import (
+    CalendarViewRequestBuilder,
+)
 
 
 class CalendarManager:
@@ -89,10 +92,29 @@ class CalendarManager:
             sentry_sdk.capture_exception(e)
             raise Exception(f"Unable to access or create the calendar: {e}") from e
 
+    def _calculate_date_range(self) -> tuple[str, str]:
+        """Calculate the date range for the next 365 days.
+
+        Returns:
+            Tuple of (start_datetime, end_datetime) in ISO 8601 format
+        """
+        now = datetime.now(timezone.utc)
+        start_date = now.date()
+        end_date = start_date + timedelta(days=365)
+
+        # Format dates for the API (ISO 8601 format)
+        start_datetime = f"{start_date.isoformat()}T00:00:00Z"
+        end_datetime = f"{end_date.isoformat()}T23:59:59Z"
+
+        return start_datetime, end_datetime
+
     async def get_existing_birthday_events(
         self, calendar_id: str
     ) -> list[Event]:
         """Get existing birthday events to avoid duplicates.
+
+        Uses calendar_view endpoint to fetch all events in the next 365 days.
+        Handles pagination to ensure all events are retrieved.
 
         Args:
             calendar_id: ID of the calendar to check
@@ -101,22 +123,55 @@ class CalendarManager:
             List of Event objects
         """
         try:
+            # Calculate the time window for the next 365 days
+            start_datetime, end_datetime = self._calculate_date_range()
+
+            all_events = []
+
+            # Get the calendar_view request builder
             if self.target_user_upn:
-                events = (
-                    await self.graph_client.users.by_user_id(self.target_user_upn)
+                calendar_view_request = (
+                    self.graph_client.users.by_user_id(self.target_user_upn)
                     .calendars.by_calendar_id(calendar_id)
-                    .events.get()
+                    .calendar_view
                 )
             else:
-                events = await self.graph_client.me.calendars.by_calendar_id(
-                    calendar_id
-                ).events.get()
+                calendar_view_request = (
+                    self.graph_client.me.calendars.by_calendar_id(calendar_id)
+                    .calendar_view
+                )
+
+            # First request with query parameters
+            query_params = CalendarViewRequestBuilder.CalendarViewRequestBuilderGetQueryParameters(
+                start_date_time=start_datetime,
+                end_date_time=end_datetime,
+            )
+
+            request_config = CalendarViewRequestBuilder.CalendarViewRequestBuilderGetRequestConfiguration(
+                query_parameters=query_params
+            )
+
+            events_page = await calendar_view_request.get(request_configuration=request_config)
+
+            # Collect events from the first page
+            if events_page and events_page.value:
+                all_events.extend(events_page.value)
+
+            # Handle pagination - check if there's a next page
+            while events_page and events_page.odata_next_link:
+                # Get the next page of results
+                events_page = await calendar_view_request.with_url(
+                    events_page.odata_next_link
+                ).get()
+
+                if events_page and events_page.value:
+                    all_events.extend(events_page.value)
 
         except Exception as e:
             sentry_sdk.capture_exception(e)
             raise Exception(f"Could not check existing events: {e}") from e
 
-        return events.value if (events and events.value) else []
+        return all_events
 
     def _prepare_event_data(
         self,
