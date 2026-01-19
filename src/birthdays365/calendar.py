@@ -92,6 +92,22 @@ class CalendarManager:
             sentry_sdk.capture_exception(e)
             raise Exception(f"Unable to access or create the calendar: {e}") from e
 
+    def _calculate_date_range(self) -> tuple[str, str]:
+        """Calculate the date range for the next 365 days.
+
+        Returns:
+            Tuple of (start_datetime, end_datetime) in ISO 8601 format
+        """
+        now = datetime.now(timezone.utc)
+        start_date = now.date()
+        end_date = start_date + timedelta(days=365)
+
+        # Format dates for the API (ISO 8601 format)
+        start_datetime = f"{start_date.isoformat()}T00:00:00Z"
+        end_datetime = f"{end_date.isoformat()}T23:59:59Z"
+
+        return start_datetime, end_datetime
+
     async def get_existing_birthday_events(
         self, calendar_id: str
     ) -> list[Event]:
@@ -108,13 +124,7 @@ class CalendarManager:
         """
         try:
             # Calculate the time window for the next 365 days
-            now = datetime.now(timezone.utc)
-            start_date = now.date()
-            end_date = start_date + timedelta(days=365)
-
-            # Format dates for the API (ISO 8601 format)
-            start_datetime = f"{start_date.isoformat()}T00:00:00Z"
-            end_datetime = f"{end_date.isoformat()}T23:59:59Z"
+            start_datetime, end_datetime = self._calculate_date_range()
 
             all_events = []
 
