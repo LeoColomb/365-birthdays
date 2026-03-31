@@ -10,7 +10,7 @@ dependencies = [
     "msgraph-sdk==1.55.0",
     "azure-identity==1.25.3",
     "python-dotenv==1.2.2",
-    "sentry-sdk>=2.56.0",
+    "sentry-sdk>=2.57.0",
 ]
 license = { text = "MIT" }
 readme = "README.md"
