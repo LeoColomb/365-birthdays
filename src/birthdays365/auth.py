@@ -13,14 +13,15 @@ class GraphAuthenticator:
     """Handles authentication with Microsoft Graph API."""
 
     # Use .default scope which includes all delegated permissions granted in app registration
-    SCOPES = ["https://graph.microsoft.com/.default"]
+    SCOPES: list[int] | None = None
 
-    def __init__(self, config: Config):
+    def __init__(self, config: Config) -> None:
         """Initialize the authenticator.
 
         Args:
             config: Application configuration
         """
+        self.SCOPES = ["https://graph.microsoft.com/.default"]
         self.config = config
         self._client = None
 

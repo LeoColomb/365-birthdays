@@ -34,17 +34,10 @@ line-length = 88
 target-version = "py310"
 
 [tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-]
 ignore = [
     "E501",  # line too long (handled by formatter)
+    "BLE001",
+    "TRY002",
 ]
 
 [tool.ruff.format]

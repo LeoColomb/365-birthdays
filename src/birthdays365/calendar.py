@@ -73,7 +73,9 @@ class CalendarManager:
             new_calendar.is_tallying_responses = False
 
             icon_property = SingleValueLegacyExtendedProperty()
-            icon_property.id = "Integer {11000E07-B51B-40D6-AF21-CAA85EDAB1D0} Id 0x0027"
+            icon_property.id = (
+                "Integer {11000E07-B51B-40D6-AF21-CAA85EDAB1D0} Id 0x0027"
+            )
             icon_property.value = "Cake"
             new_calendar.single_value_extended_properties = [icon_property]
 
@@ -108,9 +110,7 @@ class CalendarManager:
 
         return start_datetime, end_datetime
 
-    async def get_existing_birthday_events(
-        self, calendar_id: str
-    ) -> list[Event]:
+    async def get_existing_birthday_events(self, calendar_id: str) -> list[Event]:
         """Get existing birthday events to avoid duplicates.
 
         Uses calendar_view endpoint to fetch all events in the next 365 days.
@@ -136,22 +136,25 @@ class CalendarManager:
                     .calendar_view
                 )
             else:
-                calendar_view_request = (
-                    self.graph_client.me.calendars.by_calendar_id(calendar_id)
-                    .calendar_view
-                )
+                calendar_view_request = self.graph_client.me.calendars.by_calendar_id(
+                    calendar_id
+                ).calendar_view
 
             # First request with query parameters
-            query_params = CalendarViewRequestBuilder.CalendarViewRequestBuilderGetQueryParameters(
-                start_date_time=start_datetime,
-                end_date_time=end_datetime,
+            query_params = (
+                CalendarViewRequestBuilder.CalendarViewRequestBuilderGetQueryParameters(
+                    start_date_time=start_datetime,
+                    end_date_time=end_datetime,
+                )
             )
 
             request_config = CalendarViewRequestBuilder.CalendarViewRequestBuilderGetRequestConfiguration(
                 query_parameters=query_params
             )
 
-            events_page = await calendar_view_request.get(request_configuration=request_config)
+            events_page = await calendar_view_request.get(
+                request_configuration=request_config
+            )
 
             # Collect events from the first page
             if events_page and events_page.value:
@@ -174,10 +177,7 @@ class CalendarManager:
         return all_events
 
     def _prepare_event_data(
-        self,
-        contact_name: str,
-        birthday: datetime,
-        event: Event | None = None
+        self, contact_name: str, birthday: datetime, event: Event | None = None
     ) -> Event:
         """Prepare event data for birthday event creation or update.
 

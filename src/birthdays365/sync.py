@@ -58,10 +58,15 @@ class BirthdaySync:
             contact_id = contact.get("id")
 
             # Check if event already exists
-            existing_event = next((event for event in existing_events if event.subject == contact_name), None)
+            existing_event = next(
+                (event for event in existing_events if event.subject == contact_name),
+                None,
+            )
             if existing_event:
                 # Get the existing event info
-                existing_date = existing_event.start.date_time if existing_event.start else None
+                existing_date = (
+                    existing_event.start.date_time if existing_event.start else None
+                )
 
                 # Compare dates (month and day only)
                 if birthday.tzinfo is None:

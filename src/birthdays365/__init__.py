@@ -16,9 +16,9 @@ from .contacts import ContactManager
 from .sync import BirthdaySync
 
 __all__ = [
-    "GraphAuthenticator",
+    "BirthdaySync",
     "CalendarManager",
     "Config",
     "ContactManager",
-    "BirthdaySync",
+    "GraphAuthenticator",
 ]
